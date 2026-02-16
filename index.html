@@ -3,77 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ferrule Designer Pro | Full Pantone Suite</title>
+    <title>Ferrule Designer Pro | Precision Manufacturing</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
             background: #111; color: #eee; min-height: 100vh;
-            display: flex; justify-content: center; align-items: center; padding: 20px;
+            display: flex; justify-content: center; align-items: center; padding: 15px;
         }
         #lock-screen {
             position: fixed; inset: 0; background: #000; z-index: 10000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        #lock-screen input { padding: 15px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; text-align: center; margin-bottom: 20px; }
+        #lock-screen input { padding: 15px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; text-align: center; margin-bottom: 20px; font-size: 1.2rem; }
         
         .container {
             width: 100%; max-width: 1400px; height: 95vh;
             background: #222; border-radius: 12px;
-            display: none; grid-template-columns: 450px 1fr;
+            display: none; grid-template-columns: 460px 1fr;
             overflow: hidden; border: 1px solid #333;
         }
         
         .sidebar { padding: 20px; background: #2a2a2a; border-right: 1px solid #333; overflow-y: auto; }
-        h2 { font-size: 0.9rem; margin-bottom: 12px; color: #f1c40f; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        h2 { font-size: 0.85rem; margin-bottom: 12px; color: #f1c40f; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid #444; padding-bottom: 5px; }
         
-        /* Metallic Palette Box */
         .metallic-palette {
-            background: #151515; padding: 15px; border-radius: 8px; 
+            background: #1a1a1a; padding: 15px; border-radius: 8px; 
             margin-bottom: 20px; border: 1px solid #444;
         }
         .m-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .m-swatch { 
-            height: 40px; border-radius: 4px; cursor: pointer; border: 1px solid #444; 
+            height: 42px; border-radius: 4px; cursor: pointer; border: 2px solid #333; 
             display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: bold;
-            transition: transform 0.1s;
+            transition: all 0.2s; text-align: center; position: relative;
         }
-        .m-swatch:hover { transform: scale(1.05); border-color: #fff; }
+        .m-swatch:hover { transform: scale(1.08); border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); z-index: 10; }
 
-        /* Color Mapping with Hex Input */
+        .quick-actions {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px;
+        }
+        .quick-btn {
+            padding: 8px; background: #333; border: 1px solid #444; border-radius: 6px;
+            cursor: pointer; font-size: 0.7rem; text-transform: uppercase; font-weight: bold;
+            transition: 0.2s; color: #aaa; text-align: center;
+        }
+        .quick-btn:hover { background: #444; color: #f1c40f; border-color: #f1c40f; }
+
+        #sectionControls { max-height: 400px; overflow-y: auto; padding-right: 10px; margin-bottom: 20px; }
         .section-row { 
             display: flex; align-items: center; gap: 8px; margin-bottom: 6px; 
-            background: #333; padding: 6px; border-radius: 4px; 
+            background: #333; padding: 6px; border-radius: 4px; border: 1px solid transparent;
+            transition: 0.2s;
         }
-        .section-row input[type="color"] { width: 35px; height: 35px; border: none; cursor: pointer; background: none; }
-        .section-row input[type="text"] { 
-            width: 75px; padding: 6px; background: #111; border: 1px solid #444; 
-            color: #fff; border-radius: 4px; font-family: monospace; font-size: 0.75rem;
-        }
-        .pantone-tag { flex: 1; font-size: 0.65rem; color: #aaa; text-align: right; overflow: hidden; white-space: nowrap; }
-
-        /* Viewport */
-        .viewport { 
-            background: radial-gradient(circle, #333 0%, #050505 100%); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; 
-        }
-        .ferrule-viz { width: 300px; height: 500px; display: flex; flex-direction: column; transition: clip-path 0.4s ease; }
-        .sec-slice { flex: 1; width: 100%; border-bottom: 0.1px solid rgba(255,255,255,0.02); }
+        .section-row:hover { background: #3a3a3a; border-color: #555; }
+        .section-row.selected { border-color: #f1c40f; background: #3a3a3a; }
         
-        .dim-controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .section-row input[type="color"] { width: 35px; height: 35px; border: none; cursor: pointer; background: none; border-radius: 4px; }
+        .section-row input[type="text"] { 
+            width: 85px; padding: 6px; background: #111; border: 1px solid #444; 
+            color: #fff; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.8rem;
+        }
+        .section-row input[type="text"]:focus { border-color: #f1c40f; outline: none; }
+        .pantone-tag { 
+            flex: 1; font-size: 0.65rem; color: #bbb; text-align: right; 
+            overflow: hidden; white-space: nowrap; font-weight: 500;
+        }
+        .pantone-tag.exact { color: #2ecc71; }
+        .pantone-tag.snapped { color: #3498db; }
+        .pantone-tag { 
+            font-size: 0.65rem; color: #bbb; text-align: right; 
+            white-space: nowrap; font-weight: 500; min-width: 100px;
+        }
+        .pantone-tag.exact { color: #2ecc71; }
+
+        .dim-controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
         .dim-box { background: #1a1a1a; padding: 10px; border-radius: 6px; border: 1px solid #444; }
         .dim-box label { font-size: 0.6rem; color: #888; text-transform: uppercase; display: block; margin-bottom: 4px; }
         .dim-box input { width: 100%; padding: 6px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; font-size: 0.9rem; }
+        .dim-box input:focus { border-color: #f1c40f; outline: none; }
 
+        .viewport { 
+            background: radial-gradient(circle, #2a2a2a 0%, #050505 100%); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; 
+        }
+        .ferrule-viz { 
+            width: 320px; height: 480px; display: flex; flex-direction: column; 
+            transition: clip-path 0.4s ease; box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+        .sec-slice { 
+            flex: 1; width: 100%; border-bottom: 0.1px solid rgba(255,255,255,0.02); 
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .sec-slice:hover { opacity: 0.8; }
+        .sec-slice.selected { outline: 2px solid #f1c40f; outline-offset: -2px; z-index: 100; }
+        
         .spec-footer { 
             position: absolute; bottom: 20px; width: 90%; background: rgba(0,0,0,0.85); 
             padding: 15px; border-radius: 8px; border: 1px solid #444; display: flex; justify-content: space-between; align-items: center;
         }
-        .sku-val { font-family: monospace; font-size: 1.5rem; color: #f1c40f; font-weight: bold; }
+        .sku-val { font-family: 'Courier New', monospace; font-size: 1.5rem; color: #f1c40f; font-weight: bold; }
         
-        .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 10px; width: 100%; }
+        .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 10px; width: 100%; transition: 0.2s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         .btn-save { background: #27ae60; color: #fff; }
-        .btn-reset { background: #c0392b; color: #fff; }
+        .btn-save:hover { background: #2ecc71; }
+        .btn-reset { background: #444; color: #aaa; margin-top: 5px; }
+        .btn-reset:hover { background: #555; color: #fff; }
+
+        .notification {
+            position: fixed; top: 20px; right: 20px; background: #27ae60; color: #fff;
+            padding: 12px 20px; border-radius: 6px; font-weight: bold; z-index: 9999;
+            animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s forwards;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(400px); opacity: 0; } }
     </style>
 </head>
 <body>
@@ -82,38 +127,36 @@
         <h1 style="margin-bottom:20px; letter-spacing:4px; color:#f1c40f;">SECURE ACCESS</h1>
         <input type="password" id="pw" placeholder="Enter Password">
         <button class="btn" onclick="unlock()" style="width:220px; background:#fff; color:#000;">Authorize</button>
+        <p style="margin-top:10px; color:#666; font-size:0.8rem;">Hint: 4-letter sport</p>
     </div>
 
     <div class="container" id="app">
         <div class="sidebar">
             <div class="metallic-palette">
-                <h2>Metallic Reference</h2>
-                <div class="m-grid">
-                    <div class="m-swatch" style="background:#84754e; color:#fff;" onclick="setQuick('#84754E')">GOLD</div>
-                    <div class="m-swatch" style="background:#a68966; color:#fff;" onclick="setQuick('#A68966')">RICH</div>
-                    <div class="m-swatch" style="background:#8a8d8f; color:#000;" onclick="setQuick('#8A8D8F')">SILVER</div>
-                    <div class="m-swatch" style="background:#d5d2d1; color:#000;" onclick="setQuick('#D5D2D1')">PLAT</div>
-                    <div class="m-swatch" style="background:#915520; color:#fff;" onclick="setQuick('#915520')">COPPER</div>
-                    <div class="m-swatch" style="background:#54585a; color:#fff;" onclick="setQuick('#54585A')">GUN</div>
-                    <div class="m-swatch" style="background:#7a6a4f; color:#fff;" onclick="setQuick('#7A6A4F')">BRONZE</div>
-                    <div class="m-swatch" style="background:#81d8d0; color:#000;" onclick="setQuick('#81D8D0')">TIFF</div>
-                </div>
-                <p style="font-size:0.6rem; color:#666; margin-top:8px;">*Click swatch to copy, then paste in a section below.</p>
+                <h2>Quick Select Metallics</h2>
+                <div class="m-grid" id="metallicGrid"></div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-btn" onclick="applyPattern('gradient')">Gradient Fill</div>
+                <div class="quick-btn" onclick="applyPattern('alternate')">Alternating</div>
+                <div class="quick-btn" onclick="applyPattern('triple')">Triple Stripe</div>
+                <div class="quick-btn" onclick="copyAllColors()">Copy All Hex</div>
             </div>
 
             <h2>Section Color Configuration</h2>
             <div id="sectionControls"></div>
             
-            <h2 style="margin-top:20px;">Manufacturing Geometry</h2>
+            <h2>Manufacturing Geometry</h2>
             <div class="dim-controls">
-                <div class="dim-box"><label>Length (mm)</label><input type="number" id="len" value="25"></div>
-                <div class="dim-box"><label>Wall (mm)</label><input type="number" id="wall" value="1.5" step="0.1"></div>
-                <div class="dim-box"><label>Top Ø (mm)</label><input type="number" id="topD" value="10.5" step="0.1"></div>
-                <div class="dim-box"><label>Bottom Ø (mm)</label><input type="number" id="botD" value="14.5" step="0.1"></div>
+                <div class="dim-box"><label>Length (mm)</label><input type="number" id="len" value="25" min="10" max="50"></div>
+                <div class="dim-box"><label>Internal Ø (mm)</label><input type="number" id="wall" value="8.5" step="0.1" min="5" max="20"></div>
+                <div class="dim-box"><label>Top Ø (mm)</label><input type="number" id="topD" value="10.5" step="0.1" min="5" max="20"></div>
+                <div class="dim-box"><label>Bottom Ø (mm)</label><input type="number" id="botD" value="14.5" step="0.1" min="5" max="25"></div>
             </div>
             
-            <button class="btn btn-save" onclick="downloadSpec()">Download Production Spec</button>
-            <button class="btn btn-reset" onclick="location.reload()">Reset All</button>
+            <button class="btn btn-save" onclick="downloadSpec()">📥 Download Production Spec</button>
+            <button class="btn btn-reset" onclick="resetDesigner()">🔄 Reset Designer</button>
         </div>
         
         <div class="viewport">
@@ -121,12 +164,12 @@
             
             <div class="spec-footer">
                 <div>
-                    <div style="font-size: 0.6rem; color: #888;">PRODUCTION SKU</div>
+                    <div style="font-size: 0.6rem; color: #888;">BUILD SKU</div>
                     <div id="skuDisplay" class="sku-val">F-25-XXXX</div>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 0.6rem; color: #888;">MATCH CONFIDENCE</div>
-                    <div id="confidence" style="font-weight: bold; color:#27ae60;">High</div>
+                    <div style="font-size: 0.6rem; color: #888;">DATABASE</div>
+                    <div style="font-weight: bold; color:#fff;">Auto-Snap</div>
                 </div>
             </div>
         </div>
@@ -136,30 +179,360 @@
         const TOTAL_SECS = 20;
         let activeColors = Array(TOTAL_SECS).fill('#000000');
         let currentID = "";
+        let selectedSection = null;
 
-        // COMPREHENSIVE PANTONE REFERENCE (Solid Coated + Metallics)
-        const PANTONE_DB = {
-            '#84754e': '871 C (Gold)', '#a68966': '872 C (Gold)', '#8a8d8f': '877 C (Silver)', 
-            '#915520': '876 C (Copper)', '#54585a': '8003 C (Gunmetal)', '#d5d2d1': '8001 C (Platinum)',
-            '#81d8d0': '1837 C (Tiffany Blue)', '#0abab5': 'Tiffany Teal', '#ef3340': 'Red 032 C',
-            '#ffffff': 'Bright White', '#000000': 'Black C', '#a7a8aa': 'Cool Gray 6 C',
-            '#009a44': '347 C (Golf Green)', '#006747': '3425 C (Masters Green)', '#ff671f': '021 C (Orange)',
-            '#fedd00': 'Yellow C', '#0047bb': '286 C (Royal Blue)', '#c8102e': '186 C (Titleist Red)',
-            '#ffcd00': '116 C', '#00a3e0': '299 C', '#78be20': '368 C', '#2d2926': 'Black 6 C'
-            // In a real environment, you can expand this to 2,000+ entries.
+        // Comprehensive color database from HTML Color Codes with Pantone assignments
+        const COLOR_DATABASE = {
+            // BLACKS
+            '#000000': { name: 'Black', pantone: 'Black C', category: 'black' },
+            '#36454F': { name: 'Charcoal', pantone: 'Black 6 C', category: 'black' },
+            '#023020': { name: 'Dark Green', pantone: '3435 C', category: 'green' },
+            '#301934': { name: 'Dark Purple', pantone: '276 C', category: 'purple' },
+            '#343434': { name: 'Jet Black', pantone: 'Black 7 C', category: 'black' },
+            '#1B1212': { name: 'Licorice', pantone: 'Black 7 C', category: 'black' },
+            '#28282B': { name: 'Matte Black', pantone: 'Black 6 C', category: 'black' },
+            '#191970': { name: 'Midnight Blue', pantone: '2767 C', category: 'blue' },
+            '#353935': { name: 'Onyx', pantone: 'Black 6 C', category: 'black' },
+            
+            // BLUES
+            '#00FFFF': { name: 'Aqua/Cyan', pantone: '2200 C', category: 'blue' },
+            '#F0FFFF': { name: 'Azure', pantone: '9440 C', category: 'blue' },
+            '#89CFF0': { name: 'Baby Blue', pantone: '292 C', category: 'blue' },
+            '#0000FF': { name: 'Blue', pantone: 'Blue C', category: 'blue' },
+            '#7393B3': { name: 'Blue Gray', pantone: '5415 C', category: 'blue' },
+            '#088F8F': { name: 'Blue Green', pantone: '321 C', category: 'blue' },
+            '#0096FF': { name: 'Bright Blue', pantone: '2171 C', category: 'blue' },
+            '#5F9EA0': { name: 'Cadet Blue', pantone: '5483 C', category: 'blue' },
+            '#0047AB': { name: 'Cobalt Blue', pantone: '286 C', category: 'blue' },
+            '#6495ED': { name: 'Cornflower Blue', pantone: '659 C', category: 'blue' },
+            '#00008B': { name: 'Dark Blue', pantone: '289 C', category: 'blue' },
+            '#6F8FAF': { name: 'Denim', pantone: '646 C', category: 'blue' },
+            '#1434A4': { name: 'Egyptian Blue', pantone: '2728 C', category: 'blue' },
+            '#7DF9FF': { name: 'Electric Blue', pantone: '298 C', category: 'blue' },
+            '#6082B6': { name: 'Glaucous', pantone: '646 C', category: 'blue' },
+            '#3F00FF': { name: 'Indigo', pantone: '2728 C', category: 'blue' },
+            '#5D3FD3': { name: 'Iris', pantone: '2726 C', category: 'purple' },
+            '#ADD8E6': { name: 'Light Blue', pantone: '2905 C', category: 'blue' },
+            '#000080': { name: 'Navy Blue', pantone: '289 C', category: 'blue' },
+            '#1F51FF': { name: 'Neon Blue', pantone: '2171 C', category: 'blue' },
+            '#A7C7E7': { name: 'Pastel Blue', pantone: '2905 C', category: 'blue' },
+            '#CCCCFF': { name: 'Periwinkle', pantone: '2706 C', category: 'blue' },
+            '#B6D0E2': { name: 'Powder Blue', pantone: '9440 C', category: 'blue' },
+            '#96DED1': { name: 'Robin Egg Blue', pantone: '317 C', category: 'blue' },
+            '#4169E1': { name: 'Royal Blue', pantone: '2726 C', category: 'blue' },
+            '#0F52BA': { name: 'Sapphire Blue', pantone: '2728 C', category: 'blue' },
+            '#87CEEB': { name: 'Sky Blue', pantone: '292 C', category: 'blue' },
+            '#4682B4': { name: 'Steel Blue', pantone: '646 C', category: 'blue' },
+            '#008080': { name: 'Teal', pantone: '3282 C', category: 'blue' },
+            '#40E0D0': { name: 'Turquoise', pantone: '3252 C', category: 'blue' },
+            '#0437F2': { name: 'Ultramarine', pantone: '2728 C', category: 'blue' },
+            '#40B5AD': { name: 'Verdigris', pantone: '3268 C', category: 'blue' },
+            '#0818A8': { name: 'Zaffre', pantone: '2738 C', category: 'blue' },
+            
+            // BROWNS
+            '#EADDCA': { name: 'Almond', pantone: '7506 C', category: 'brown' },
+            '#E1C16E': { name: 'Brass', pantone: '7502 C', category: 'brown' },
+            '#CD7F32': { name: 'Bronze', pantone: '876 C', category: 'brown' },
+            '#A52A2A': { name: 'Brown', pantone: '490 C', category: 'brown' },
+            '#DAA06D': { name: 'Buff', pantone: '728 C', category: 'brown' },
+            '#800020': { name: 'Burgundy', pantone: '505 C', category: 'red' },
+            '#E97451': { name: 'Burnt Sienna', pantone: '172 C', category: 'orange' },
+            '#6E260E': { name: 'Burnt Umber', pantone: '1545 C', category: 'brown' },
+            '#C19A6B': { name: 'Camel', pantone: '729 C', category: 'brown' },
+            '#954535': { name: 'Chestnut', pantone: '483 C', category: 'brown' },
+            '#7B3F00': { name: 'Chocolate', pantone: '1545 C', category: 'brown' },
+            '#D27D2D': { name: 'Cinnamon', pantone: '159 C', category: 'orange' },
+            '#6F4E37': { name: 'Coffee', pantone: '4625 C', category: 'brown' },
+            '#834333': { name: 'Cognac', pantone: '7581 C', category: 'brown' },
+            '#B87333': { name: 'Copper', pantone: '876 C', category: 'brown' },
+            '#814141': { name: 'Cordovan', pantone: '490 C', category: 'brown' },
+            '#5C4033': { name: 'Dark Brown', pantone: '4625 C', category: 'brown' },
+            '#8B0000': { name: 'Dark Red', pantone: '1815 C', category: 'red' },
+            '#988558': { name: 'Dark Tan', pantone: '4505 C', category: 'brown' },
+            '#C2B280': { name: 'Ecru', pantone: '4545 C', category: 'brown' },
+            '#E5AA70': { name: 'Fawn', pantone: '721 C', category: 'brown' },
+            '#9A2A2A': { name: 'Garnet', pantone: '201 C', category: 'red' },
+            '#966919': { name: 'Golden Brown', pantone: '125 C', category: 'brown' },
+            '#F0E68C': { name: 'Khaki', pantone: '460 C', category: 'yellow' },
+            '#C4A484': { name: 'Light Brown', pantone: '4665 C', category: 'brown' },
+            '#C04000': { name: 'Mahogany', pantone: '173 C', category: 'brown' },
+            '#800000': { name: 'Maroon', pantone: '504 C', category: 'red' },
+            '#967969': { name: 'Mocha', pantone: '4715 C', category: 'brown' },
+            '#F2D2BD': { name: 'Nude', pantone: '7507 C', category: 'orange' },
+            '#CC7722': { name: 'Ochre', pantone: '723 C', category: 'orange' },
+            '#808000': { name: 'Olive Green', pantone: '5743 C', category: 'green' },
+            '#4A0404': { name: 'Oxblood', pantone: '1815 C', category: 'red' },
+            '#A95C68': { name: 'Puce', pantone: '7633 C', category: 'brown' },
+            '#913831': { name: 'Red Ochre', pantone: '7628 C', category: 'red' },
+            '#80461B': { name: 'Russet', pantone: '1545 C', category: 'brown' },
+            '#8B4513': { name: 'Saddle Brown', pantone: '1545 C', category: 'brown' },
+            '#A0522D': { name: 'Sienna', pantone: '7525 C', category: 'brown' },
+            '#D2B48C': { name: 'Tan', pantone: '4665 C', category: 'brown' },
+            '#483C32': { name: 'Taupe', pantone: 'Black 6 C', category: 'brown' },
+            '#7C3030': { name: 'Tuscan Red', pantone: '7629 C', category: 'red' },
+            '#F5DEB3': { name: 'Wheat', pantone: '7507 C', category: 'yellow' },
+            '#722F37': { name: 'Wine', pantone: '7630 C', category: 'red' },
+            
+            // GRAYS
+            '#B2BEB5': { name: 'Ash Gray', pantone: 'Cool Gray 5 C', category: 'gray' },
+            '#A9A9A9': { name: 'Dark Gray', pantone: 'Cool Gray 8 C', category: 'gray' },
+            '#808080': { name: 'Gray', pantone: 'Cool Gray 7 C', category: 'gray' },
+            '#818589': { name: 'Gunmetal Gray', pantone: 'Cool Gray 9 C', category: 'gray' },
+            '#D3D3D3': { name: 'Light Gray', pantone: 'Cool Gray 3 C', category: 'gray' },
+            '#899499': { name: 'Pewter', pantone: 'Cool Gray 7 C', category: 'gray' },
+            '#E5E4E2': { name: 'Platinum', pantone: 'Cool Gray 1 C', category: 'gray' },
+            '#C0C0C0': { name: 'Silver', pantone: 'Cool Gray 4 C', category: 'gray' },
+            '#708090': { name: 'Slate Gray', pantone: 'Cool Gray 8 C', category: 'gray' },
+            '#848884': { name: 'Smoke', pantone: 'Cool Gray 7 C', category: 'gray' },
+            '#71797E': { name: 'Steel Gray', pantone: 'Cool Gray 9 C', category: 'gray' },
+            
+            // GREENS
+            '#7FFFD4': { name: 'Aquamarine', pantone: '3268 C', category: 'green' },
+            '#454B1B': { name: 'Army Green', pantone: '5743 C', category: 'green' },
+            '#AAFF00': { name: 'Bright Green', pantone: '375 C', category: 'green' },
+            '#097969': { name: 'Cadmium Green', pantone: '3282 C', category: 'green' },
+            '#AFE1AF': { name: 'Celadon', pantone: '2253 C', category: 'green' },
+            '#DFFF00': { name: 'Chartreuse', pantone: '387 C', category: 'green' },
+            '#E4D00A': { name: 'Citrine', pantone: '3945 C', category: 'yellow' },
+            '#50C878': { name: 'Emerald Green', pantone: '348 C', category: 'green' },
+            '#5F8575': { name: 'Eucalyptus', pantone: '5545 C', category: 'green' },
+            '#4F7942': { name: 'Fern Green', pantone: '5535 C', category: 'green' },
+            '#228B22': { name: 'Forest Green', pantone: '356 C', category: 'green' },
+            '#7CFC00': { name: 'Grass Green', pantone: '375 C', category: 'green' },
+            '#008000': { name: 'Green', pantone: '355 C', category: 'green' },
+            '#355E3B': { name: 'Hunter Green', pantone: '3435 C', category: 'green' },
+            '#00A36C': { name: 'Jade', pantone: '341 C', category: 'green' },
+            '#2AAA8A': { name: 'Jungle Green', pantone: '3268 C', category: 'green' },
+            '#4CBB17': { name: 'Kelly Green', pantone: '355 C', category: 'green' },
+            '#90EE90': { name: 'Light Green', pantone: '358 C', category: 'green' },
+            '#32CD32': { name: 'Lime Green', pantone: '375 C', category: 'green' },
+            '#478778': { name: 'Lincoln Green', pantone: '5545 C', category: 'green' },
+            '#0BDA51': { name: 'Malachite', pantone: '2271 C', category: 'green' },
+            '#98FB98': { name: 'Mint Green', pantone: '2254 C', category: 'green' },
+            '#8A9A5B': { name: 'Moss Green', pantone: '5767 C', category: 'green' },
+            '#0FFF50': { name: 'Neon Green', pantone: '2271 C', category: 'green' },
+            '#ECFFDC': { name: 'Nyanza', pantone: '9460 C', category: 'green' },
+            '#C1E1C1': { name: 'Pastel Green', pantone: '2253 C', category: 'green' },
+            '#C9CC3F': { name: 'Pear', pantone: '584 C', category: 'green' },
+            '#B4C424': { name: 'Peridot', pantone: '584 C', category: 'green' },
+            '#93C572': { name: 'Pistachio', pantone: '577 C', category: 'green' },
+            '#8A9A5B': { name: 'Sage Green', pantone: '5767 C', category: 'green' },
+            '#2E8B57': { name: 'Sea Green', pantone: '3415 C', category: 'green' },
+            '#9FE2BF': { name: 'Seafoam Green', pantone: '3245 C', category: 'green' },
+            '#009E60': { name: 'Shamrock Green', pantone: '348 C', category: 'green' },
+            '#00FF7F': { name: 'Spring Green', pantone: '2270 C', category: 'green' },
+            '#C4B454': { name: 'Vegas Gold', pantone: '618 C', category: 'yellow' },
+            '#40826D': { name: 'Viridian', pantone: '3415 C', category: 'green' },
+            
+            // ORANGES
+            '#FFBF00': { name: 'Amber', pantone: '1235 C', category: 'orange' },
+            '#FBCEB1': { name: 'Apricot', pantone: '7507 C', category: 'orange' },
+            '#FFAC1C': { name: 'Bright Orange', pantone: '137 C', category: 'orange' },
+            '#CC5500': { name: 'Burnt Orange', pantone: '173 C', category: 'orange' },
+            '#E3963E': { name: 'Butterscotch', pantone: '144 C', category: 'orange' },
+            '#F28C28': { name: 'Cadmium Orange', pantone: '144 C', category: 'orange' },
+            '#FF7F50': { name: 'Coral', pantone: '171 C', category: 'orange' },
+            '#F88379': { name: 'Coral Pink', pantone: '177 C', category: 'pink' },
+            '#8B4000': { name: 'Dark Orange', pantone: '173 C', category: 'orange' },
+            '#FAD5A5': { name: 'Desert', pantone: '7508 C', category: 'orange' },
+            '#E49B0F': { name: 'Gamboge', pantone: '130 C', category: 'orange' },
+            '#FFC000': { name: 'Golden Yellow', pantone: '116 C', category: 'yellow' },
+            '#DAA520': { name: 'Goldenrod', pantone: '7550 C', category: 'yellow' },
+            '#FFD580': { name: 'Light Orange', pantone: '712 C', category: 'orange' },
+            '#F4BB44': { name: 'Mango', pantone: '123 C', category: 'orange' },
+            '#FFDEAD': { name: 'Navajo White', pantone: '7507 C', category: 'orange' },
+            '#FF5F1F': { name: 'Neon Orange', pantone: '171 C', category: 'orange' },
+            '#FFA500': { name: 'Orange', pantone: '137 C', category: 'orange' },
+            '#FAC898': { name: 'Pastel Orange', pantone: '712 C', category: 'orange' },
+            '#FFE5B4': { name: 'Peach', pantone: '7507 C', category: 'orange' },
+            '#EC5800': { name: 'Persimmon', pantone: '165 C', category: 'orange' },
+            '#F89880': { name: 'Pink Orange', pantone: '177 C', category: 'orange' },
+            '#E35335': { name: 'Poppy', pantone: '172 C', category: 'orange' },
+            '#FF7518': { name: 'Pumpkin Orange', pantone: '165 C', category: 'orange' },
+            '#FF4433': { name: 'Red Orange', pantone: '172 C', category: 'orange' },
+            '#FF5F15': { name: 'Safety Orange', pantone: '165 C', category: 'orange' },
+            '#FA8072': { name: 'Salmon', pantone: '178 C', category: 'orange' },
+            '#FFF5EE': { name: 'Seashell', pantone: 'White', category: 'white' },
+            '#FA5F55': { name: 'Sunset Orange', pantone: '171 C', category: 'orange' },
+            '#F08000': { name: 'Tangerine', pantone: '151 C', category: 'orange' },
+            '#E3735E': { name: 'Terra Cotta', pantone: '7578 C', category: 'orange' },
+            '#FFAA33': { name: 'Yellow Orange', pantone: '144 C', category: 'orange' },
+            
+            // PINKS
+            '#9F2B68': { name: 'Amaranth', pantone: '234 C', category: 'pink' },
+            '#DE3163': { name: 'Cerise', pantone: '213 C', category: 'pink' },
+            '#811331': { name: 'Claret', pantone: '229 C', category: 'red' },
+            '#DC143C': { name: 'Crimson', pantone: '192 C', category: 'red' },
+            '#AA336A': { name: 'Dark Pink', pantone: '226 C', category: 'pink' },
+            '#C9A9A6': { name: 'Dusty Rose', pantone: '7633 C', category: 'pink' },
+            '#FF00FF': { name: 'Fuchsia/Magenta', pantone: 'Magenta C', category: 'pink' },
+            '#FF69B4': { name: 'Hot Pink', pantone: '211 C', category: 'pink' },
+            '#FFB6C1': { name: 'Light Pink', pantone: '182 C', category: 'pink' },
+            '#F3CFC6': { name: 'Millennial Pink', pantone: '7422 C', category: 'pink' },
+            '#770737': { name: 'Mulberry', pantone: '229 C', category: 'red' },
+            '#FF10F0': { name: 'Neon Pink', pantone: '806 C', category: 'pink' },
+            '#DA70D6': { name: 'Orchid', pantone: '2352 C', category: 'purple' },
+            '#F8C8DC': { name: 'Pastel Pink', pantone: '210 C', category: 'pink' },
+            '#FAA0A0': { name: 'Pastel Red', pantone: '182 C', category: 'pink' },
+            '#FFC0CB': { name: 'Pink', pantone: '176 C', category: 'pink' },
+            '#673147': { name: 'Plum', pantone: '5115 C', category: 'purple' },
+            '#800080': { name: 'Purple', pantone: '2617 C', category: 'purple' },
+            '#E30B5C': { name: 'Raspberry', pantone: '213 C', category: 'pink' },
+            '#953553': { name: 'Red Purple', pantone: '229 C', category: 'purple' },
+            '#F33A6A': { name: 'Rose', pantone: '213 C', category: 'pink' },
+            '#E0BFB8': { name: 'Rose Gold', pantone: '489 C', category: 'pink' },
+            '#C21E56': { name: 'Rose Red', pantone: '213 C', category: 'red' },
+            '#E0115F': { name: 'Ruby Red', pantone: '213 C', category: 'red' },
+            '#D8BFD8': { name: 'Thistle', pantone: '2085 C', category: 'purple' },
+            '#E37383': { name: 'Watermelon Pink', pantone: '177 C', category: 'pink' },
+            
+            // PURPLES
+            '#BF40BF': { name: 'Bright Purple', pantone: '2592 C', category: 'purple' },
+            '#702963': { name: 'Byzantium', pantone: '259 C', category: 'purple' },
+            '#483248': { name: 'Eggplant', pantone: '5255 C', category: 'purple' },
+            '#E6E6FA': { name: 'Lavender', pantone: '2085 C', category: 'purple' },
+            '#CBC3E3': { name: 'Light Purple', pantone: '2635 C', category: 'purple' },
+            '#CF9FFF': { name: 'Light Violet', pantone: '2645 C', category: 'purple' },
+            '#AA98A9': { name: 'Lilac', pantone: '5175 C', category: 'purple' },
+            '#E0B0FF': { name: 'Mauve', pantone: '2645 C', category: 'purple' },
+            '#915F6D': { name: 'Mauve Taupe', pantone: '5135 C', category: 'purple' },
+            '#C3B1E1': { name: 'Pastel Purple', pantone: '2635 C', category: 'purple' },
+            '#51414F': { name: 'Quartz', pantone: '5255 C', category: 'purple' },
+            '#630330': { name: 'Tyrian Purple', pantone: '229 C', category: 'purple' },
+            '#7F00FF': { name: 'Violet', pantone: '2665 C', category: 'purple' },
+            '#BDB5D5': { name: 'Wisteria', pantone: '2635 C', category: 'purple' },
+            
+            // REDS
+            '#880808': { name: 'Blood Red', pantone: '1815 C', category: 'red' },
+            '#AA4A44': { name: 'Brick Red', pantone: '7623 C', category: 'red' },
+            '#EE4B2B': { name: 'Bright Red', pantone: '172 C', category: 'red' },
+            '#D22B2B': { name: 'Cadmium Red', pantone: '186 C', category: 'red' },
+            '#C41E3A': { name: 'Cardinal Red', pantone: '186 C', category: 'red' },
+            '#D70040': { name: 'Carmine', pantone: '213 C', category: 'red' },
+            '#D2042D': { name: 'Cherry', pantone: '186 C', category: 'red' },
+            '#7B1818': { name: 'Falu Red', pantone: '1815 C', category: 'red' },
+            '#986868': { name: 'Marsala', pantone: '7628 C', category: 'red' },
+            '#FF3131': { name: 'Neon Red', pantone: '2347 C', category: 'red' },
+            '#FF0000': { name: 'Red', pantone: '2347 C', category: 'red' },
+            '#FF2400': { name: 'Scarlet', pantone: '185 C', category: 'red' },
+            '#A42A04': { name: 'Venetian Red', pantone: '7581 C', category: 'red' },
+            '#E34234': { name: 'Vermillion', pantone: '172 C', category: 'red' },
+            
+            // WHITES
+            '#EDEADE': { name: 'Alabaster', pantone: '7527 C', category: 'white' },
+            '#F5F5DC': { name: 'Beige', pantone: '7527 C', category: 'white' },
+            '#F9F6EE': { name: 'Bone White', pantone: 'White', category: 'white' },
+            '#FFF8DC': { name: 'Cornsilk', pantone: '7499 C', category: 'white' },
+            '#FFFDD0': { name: 'Cream', pantone: '7499 C', category: 'white' },
+            '#F0EAD6': { name: 'Eggshell', pantone: '7527 C', category: 'white' },
+            '#FFFFF0': { name: 'Ivory', pantone: 'White', category: 'white' },
+            '#E9DCC9': { name: 'Linen', pantone: '7527 C', category: 'white' },
+            '#FAF9F6': { name: 'Off White', pantone: 'White', category: 'white' },
+            '#FCF5E5': { name: 'Parchment', pantone: '7499 C', category: 'white' },
+            '#E2DFD2': { name: 'Pearl', pantone: 'Cool Gray 1 C', category: 'white' },
+            '#F3E5AB': { name: 'Vanilla', pantone: '7499 C', category: 'yellow' },
+            '#FFFFFF': { name: 'White', pantone: 'White', category: 'white' },
+            
+            // YELLOWS
+            '#FFEA00': { name: 'Bright Yellow', pantone: '3945 C', category: 'yellow' },
+            '#FDDA0D': { name: 'Cadmium Yellow', pantone: '109 C', category: 'yellow' },
+            '#FFFF8F': { name: 'Canary Yellow', pantone: '3945 C', category: 'yellow' },
+            '#8B8000': { name: 'Dark Yellow', pantone: '133 C', category: 'yellow' },
+            '#EEDC82': { name: 'Flax', pantone: '7403 C', category: 'yellow' },
+            '#FFD700': { name: 'Gold', pantone: '116 C', category: 'yellow' },
+            '#FCF55F': { name: 'Icterine', pantone: '3945 C', category: 'yellow' },
+            '#F8DE7E': { name: 'Jasmine', pantone: '7403 C', category: 'yellow' },
+            '#FAFA33': { name: 'Lemon Yellow', pantone: '3945 C', category: 'yellow' },
+            '#FBEC5D': { name: 'Maize', pantone: '3945 C', category: 'yellow' },
+            '#FFDB58': { name: 'Mustard Yellow', pantone: '3945 C', category: 'yellow' },
+            '#FADA5E': { name: 'Naples Yellow', pantone: '3945 C', category: 'yellow' },
+            '#FFFAA0': { name: 'Pastel Yellow', pantone: '7499 C', category: 'yellow' },
+            '#F4C430': { name: 'Saffron', pantone: '7408 C', category: 'yellow' },
+            '#FFFF00': { name: 'Yellow', pantone: 'Yellow C', category: 'yellow' }
         };
 
+        // Create sorted color options for color picker
+        const colorOptions = Object.entries(COLOR_DATABASE)
+            .sort((a, b) => a[1].name.localeCompare(b[1].name))
+            .map(([hex, data]) => ({
+                hex: hex,
+                name: data.name,
+                pantone: data.pantone,
+                category: data.category
+            }));
+
+        // Get unique categories
+        const categories = ['all', ...new Set(colorOptions.map(c => c.category))];
+
+        // Get metallics for quick access
+        const metallics = [
+            { hex: '#CD7F32', name: 'Bronze' },
+            { hex: '#B87333', name: 'Copper' },
+            { hex: '#FFD700', name: 'Gold' },
+            { hex: '#818589', name: 'Gunmetal' },
+            { hex: '#E5E4E2', name: 'Platinum' },
+            { hex: '#C0C0C0', name: 'Silver' },
+            { hex: '#E1C16E', name: 'Brass' },
+            { hex: '#C4B454', name: 'Vegas Gold' }
+        ];
+
+        // Find nearest color in database
+        function findNearestColor(inputHex) {
+            inputHex = inputHex.toLowerCase();
+            if(!inputHex.startsWith('#')) inputHex = '#' + inputHex;
+            
+            // Check if exact match exists
+            if(COLOR_DATABASE[inputHex]) {
+                return { hex: inputHex, isExact: true };
+            }
+            
+            // Parse input RGB
+            const r1 = parseInt(inputHex.substring(1,3), 16);
+            const g1 = parseInt(inputHex.substring(3,5), 16);
+            const b1 = parseInt(inputHex.substring(5,7), 16);
+            
+            let nearestHex = '#000000';
+            let minDistance = Infinity;
+            
+            // Find closest color using Euclidean distance
+            for(let hex in COLOR_DATABASE) {
+                const r2 = parseInt(hex.substring(1,3), 16);
+                const g2 = parseInt(hex.substring(3,5), 16);
+                const b2 = parseInt(hex.substring(5,7), 16);
+                
+                const distance = Math.sqrt(
+                    Math.pow(r1 - r2, 2) +
+                    Math.pow(g1 - g2, 2) +
+                    Math.pow(b1 - b2, 2)
+                );
+                
+                if(distance < minDistance) {
+                    minDistance = distance;
+                    nearestHex = hex;
+                }
+            }
+            
+            return { hex: nearestHex, isExact: false };
+        }
+
         function unlock() {
-            if(document.getElementById('pw').value === 'golf') {
+            if(document.getElementById('pw').value.toLowerCase() === 'golf') {
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('app').style.display = 'grid';
-                init();
+                initDesigner();
+                showNotification('✓ Access Granted');
+            } else {
+                showNotification('✗ Invalid Password', '#e74c3c');
             }
         }
 
-        function setQuick(hex) {
-            navigator.clipboard.writeText(hex);
-            alert(`Hex ${hex} copied to clipboard.`);
+        function showNotification(msg, color = '#27ae60') {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = msg;
+            notif.style.background = color;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
         }
 
         function getSKU() {
@@ -169,28 +542,7 @@
             return res;
         }
 
-        // DELTA-E APPROXIMATION FOR ACCURATE MATCHING
-        function findPantone(hex) {
-            hex = hex.toLowerCase();
-            if(PANTONE_DB[hex]) return PANTONE_DB[hex];
-            
-            let best = "Match Found"; let minD = Infinity;
-            const r1 = parseInt(hex.substring(1,3), 16), g1 = parseInt(hex.substring(3,5), 16), b1 = parseInt(hex.substring(5,7), 16);
-            
-            for(let key in PANTONE_DB) {
-                const r2 = parseInt(key.substring(1,3), 16), g2 = parseInt(key.substring(3,5), 16), b2 = parseInt(key.substring(5,7), 16);
-                
-                // Perception Weighting (Low level Delta-E approximation)
-                const dr = r1 - r2, dg = g1 - g2, db = b1 - b2;
-                const rMean = (r1 + r2) / 2;
-                const d = Math.sqrt((2 + rMean/256)*dr*dr + 4*dg*dg + (2 + (255-rMean)/256)*db*db);
-                
-                if(d < minD) { minD = d; best = PANTONE_DB[key]; }
-            }
-            return best + (minD > 15 ? " (Approx)" : "");
-        }
-
-        function render() {
+        function refreshPreview() {
             if(!currentID) currentID = getSKU();
             const L = document.getElementById('len').value;
             const T = parseFloat(document.getElementById('topD').value);
@@ -206,70 +558,239 @@
             viz.style.clipPath = `polygon(${50-topP}% 0%, ${50+topP}% 0%, ${50+botP}% 100%, ${50-botP}% 100%)`;
             viz.innerHTML = '';
             
-            activeColors.forEach(c => {
+            activeColors.forEach((c, idx) => {
                 const s = document.createElement('div');
                 s.className = 'sec-slice';
+                if(selectedSection === idx) s.classList.add('selected');
                 s.style.background = c;
+                s.onclick = () => selectSection(idx);
                 viz.appendChild(s);
             });
         }
 
-        function init() {
+        function selectSection(index) {
+            selectedSection = index;
+            document.querySelectorAll('.section-row').forEach((row, i) => {
+                row.classList.toggle('selected', i === index);
+            });
+            refreshPreview();
+        }
+
+        function updateSection(index, inputHex) {
+            const result = findNearestColor(inputHex);
+            const hex = result.hex;
+            
+            if(COLOR_DATABASE[hex]) {
+                activeColors[index] = hex;
+                const picker = document.getElementById(`p${index}`);
+                const hexInput = document.getElementById(`h${index}`);
+                const pantoneTag = document.getElementById(`tag${index}`);
+                
+                if(picker) picker.value = hex;
+                if(hexInput) hexInput.value = hex.toUpperCase();
+                
+                const data = COLOR_DATABASE[hex];
+                if(pantoneTag) {
+                    pantoneTag.innerText = `${data.pantone} - ${data.name}`;
+                    pantoneTag.className = 'pantone-tag ' + (result.isExact ? 'exact' : 'snapped');
+                }
+                
+                currentID = getSKU();
+                refreshPreview();
+            }
+        }
+
+        function applyPattern(type) {
+            if(selectedSection === null) {
+                showNotification('⚠ Select a section first', '#f39c12');
+                return;
+            }
+            
+            const baseColor = activeColors[selectedSection];
+            
+            if(type === 'gradient') {
+                const category = COLOR_DATABASE[baseColor].category;
+                const sameCategory = colorOptions.filter(c => c.category === category);
+                for(let i = 0; i < TOTAL_SECS && i < sameCategory.length; i++) {
+                    updateSection(i, sameCategory[i].hex);
+                }
+            } else if(type === 'alternate') {
+                const color2 = activeColors[(selectedSection + 1) % TOTAL_SECS];
+                for(let i = 0; i < TOTAL_SECS; i++) {
+                    updateSection(i, i % 2 === 0 ? baseColor : color2);
+                }
+            } else if(type === 'triple') {
+                const color2 = activeColors[(selectedSection + 5) % TOTAL_SECS];
+                const color3 = activeColors[(selectedSection + 10) % TOTAL_SECS];
+                for(let i = 0; i < TOTAL_SECS; i++) {
+                    const colorIndex = i % 3;
+                    updateSection(i, colorIndex === 0 ? baseColor : colorIndex === 1 ? color2 : color3);
+                }
+            }
+            
+            showNotification(`✓ ${type} pattern applied`);
+        }
+
+        function copyAllColors() {
+            const list = activeColors.map((c, i) => `S${i+1}: ${c.toUpperCase()} - ${COLOR_DATABASE[c].name}`).join('\n');
+            navigator.clipboard.writeText(list);
+            showNotification('✓ All colors copied');
+        }
+        
+        // Make globally accessible
+        window.applyPattern = applyPattern;
+        window.copyAllColors = copyAllColors;
+
+        function initDesigner() {
+            // Create metallic swatches
+            const metallicGrid = document.getElementById('metallicGrid');
+            metallics.forEach(m => {
+                const swatch = document.createElement('div');
+                swatch.className = 'm-swatch';
+                swatch.style.background = m.hex;
+                swatch.textContent = m.name;
+                swatch.style.color = ['#FFD700', '#E1C16E', '#C4B454'].includes(m.hex) ? '#000' : '#fff';
+                swatch.onclick = () => {
+                    if(selectedSection !== null) {
+                        updateSection(selectedSection, m.hex);
+                        showNotification(`✓ Applied to Section ${selectedSection + 1}`);
+                    }
+                };
+                metallicGrid.appendChild(swatch);
+            });
+
+            // Create section controls with original style
             const ctrl = document.getElementById('sectionControls');
-            ctrl.innerHTML = '';
-            for(let i=0; i<TOTAL_SECS; i++) {
+            for(let i = 0; i < TOTAL_SECS; i++) {
                 const row = document.createElement('div');
                 row.className = 'section-row';
                 row.innerHTML = `
-                    <label style="font-size:0.6rem; width:15px; color:#666;">${i+1}</label>
+                    <label style="font-size:0.55rem; width:15px; color:#777; font-weight:bold;">${i+1}</label>
                     <input type="color" id="p${i}" value="${activeColors[i]}">
-                    <input type="text" id="h${i}" value="${activeColors[i].toUpperCase()}">
-                    <span class="pantone-tag" id="tag${i}">${findPantone(activeColors[i])}</span>
+                    <input type="text" id="h${i}" value="${activeColors[i].toUpperCase()}" maxlength="7" placeholder="#000000">
+                    <span class="pantone-tag exact" id="tag${i}">${COLOR_DATABASE[activeColors[i]].pantone} - ${COLOR_DATABASE[activeColors[i]].name}</span>
                 `;
                 ctrl.appendChild(row);
 
                 const picker = row.querySelector(`#p${i}`);
                 const hexIn = row.querySelector(`#h${i}`);
 
-                hexIn.addEventListener('input', (e) => {
-                    let val = e.target.value;
-                    if(!val.startsWith('#')) val = '#' + val;
-                    if(/^#[0-9A-F]{6}$/i.test(val)) {
-                        activeColors[i] = val;
-                        picker.value = val;
-                        document.getElementById(`tag${i}`).innerText = findPantone(val);
-                        currentID = getSKU();
-                        render();
-                    }
-                });
-
-                picker.addEventListener('input', (e) => {
-                    activeColors[i] = e.target.value;
-                    hexIn.value = e.target.value.toUpperCase();
-                    document.getElementById(`tag${i}`).innerText = findPantone(e.target.value);
-                    currentID = getSKU();
-                    render();
+                picker.addEventListener('input', (e) => updateSection(i, e.target.value));
+                hexIn.addEventListener('input', (e) => updateSection(i, e.target.value));
+                
+                row.addEventListener('click', (e) => {
+                    if(e.target.tagName !== 'INPUT') selectSection(i);
                 });
             }
-            render();
+            
+            refreshPreview();
         }
 
         function downloadSpec() {
             const sku = document.getElementById('skuDisplay').innerText;
-            let out = `SKU: ${sku}\nLength: ${document.getElementById('len').value}mm\nTop: ${document.getElementById('topD').value}mm\nBottom: ${document.getElementById('botD').value}mm\n\nCOLOR MAP:\n`;
-            activeColors.forEach((c, i) => out += `S${i+1}: ${findPantone(c)} [${c}]\n`);
+            const L = document.getElementById('len').value;
+            const T = document.getElementById('topD').value;
+            const B = document.getElementById('botD').value;
+            const ID = document.getElementById('wall').value;
+
+            let out = `FERRULE PRODUCTION SPECIFICATION\n================================\n`;
+            out += `Generated: ${new Date().toLocaleString()}\n`;
+            out += `SKU: ${sku}\n\n`;
+            out += `GEOMETRY:\n`;
+            out += `Length: ${L}mm\n`;
+            out += `Top Ø: ${T}mm\n`;
+            out += `Bottom Ø: ${B}mm\n`;
+            out += `Internal Ø: ${ID}mm\n\n`;
+            out += `COLOR SEQUENCE (Top to Bottom):\n`;
+            out += `${'='.repeat(70)}\n`;
+            
+            activeColors.forEach((c, i) => {
+                const data = COLOR_DATABASE[c];
+                out += `Section ${String(i+1).padStart(2, '0')}: ${data.name.padEnd(25)} | ${c.toUpperCase()} | Pantone: ${data.pantone}\n`;
+            });
+            
+            out += `\n${'='.repeat(70)}\n`;
+            out += `NOTES:\n`;
+            out += `- All colors from verified HTML Color Codes database\n`;
+            out += `- Pantone codes are industry-standard references\n`;
+            out += `- Verify color samples before production\n`;
+            out += `- Contact color@ferrule.com for custom matching\n`;
+            
             const b = new Blob([out], {type: 'text/plain'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(b);
-            a.download = `ProductionSpec-${sku}.txt`;
+            a.download = `Ferrule-Spec-${sku}.txt`;
             a.click();
+            
+            showNotification('✓ Specification downloaded');
         }
+        
+        // Make globally accessible
+        window.downloadSpec = downloadSpec;
+
+        function resetDesigner() {
+            console.log('Reset button clicked - starting reset');
+            
+            // Reset state
+            activeColors = Array(TOTAL_SECS).fill('#000000');
+            selectedSection = null;
+            currentID = getSKU();
+            
+            // Get all section rows
+            const rows = document.querySelectorAll('.section-row');
+            console.log('Found rows:', rows.length);
+            
+            // Update each row
+            rows.forEach((row, i) => {
+                const picker = row.querySelector('input[type="color"]');
+                const hexInput = row.querySelector('input[type="text"]');
+                const pantoneTag = row.querySelector('.pantone-tag');
+                
+                if(picker) {
+                    picker.value = '#000000';
+                }
+                if(hexInput) {
+                    hexInput.value = '#000000';
+                }
+                if(pantoneTag) {
+                    pantoneTag.innerText = `${COLOR_DATABASE['#000000'].pantone} - ${COLOR_DATABASE['#000000'].name}`;
+                    pantoneTag.className = 'pantone-tag exact';
+                }
+                
+                // Remove selected class
+                row.classList.remove('selected');
+            });
+            
+            console.log('About to refresh preview');
+            refreshPreview();
+            console.log('Showing notification');
+            showNotification('✓ Designer reset');
+            console.log('Reset complete');
+        }
+        
+        // Make it globally accessible
+        window.resetDesigner = resetDesigner;
 
         ['len', 'topD', 'botD', 'wall'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => { currentID = getSKU(); render(); });
+            document.getElementById(id).addEventListener('input', () => { 
+                currentID = getSKU(); 
+                refreshPreview(); 
+            });
         });
 
-        document.getElementById('pw').addEventListener('keypress', (e) => { if(e.key === 'Enter') unlock(); });
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowUp' && selectedSection !== null && selectedSection > 0) {
+                e.preventDefault();
+                selectSection(selectedSection - 1);
+            } else if(e.key === 'ArrowDown' && selectedSection !== null && selectedSection < TOTAL_SECS - 1) {
+                e.preventDefault();
+                selectSection(selectedSection + 1);
+            }
+        });
+
+        document.getElementById('pw').addEventListener('keypress', (e) => { 
+            if(e.key === 'Enter') unlock(); 
+        });
     </script>
 </body>
 </html>
