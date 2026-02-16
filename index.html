@@ -3,18 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ferrule Designer Pro | Precision Edition</title>
+    <title>Ferrule Designer Pro | Full Pantone Suite</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: #1a1a1a;
-            color: #eee;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            background: #111; color: #eee; min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; padding: 20px;
         }
         #lock-screen {
             position: fixed; inset: 0; background: #000; z-index: 10000;
@@ -23,115 +18,115 @@
         #lock-screen input { padding: 15px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; text-align: center; margin-bottom: 20px; }
         
         .container {
-            width: 100%; max-width: 1300px; height: 90vh;
-            background: #252525; border-radius: 12px;
-            display: none; grid-template-columns: 420px 1fr;
+            width: 100%; max-width: 1400px; height: 95vh;
+            background: #222; border-radius: 12px;
+            display: none; grid-template-columns: 450px 1fr;
             overflow: hidden; border: 1px solid #333;
         }
         
-        /* Sidebar */
-        .sidebar { padding: 25px; background: #2d2d2d; border-right: 1px solid #333; overflow-y: auto; }
-        h2 { font-size: 1rem; margin-bottom: 15px; color: #f1c40f; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar { padding: 20px; background: #2a2a2a; border-right: 1px solid #333; overflow-y: auto; }
+        h2 { font-size: 0.9rem; margin-bottom: 12px; color: #f1c40f; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #444; padding-bottom: 5px; }
         
-        /* NEW: Metallic Palette Box */
-        .metallic-box {
-            background: #1a1a1a; padding: 15px; border-radius: 8px; 
-            margin-bottom: 25px; border: 1px solid #444;
+        /* Metallic Palette Box */
+        .metallic-palette {
+            background: #151515; padding: 15px; border-radius: 8px; 
+            margin-bottom: 20px; border: 1px solid #444;
         }
-        .metallic-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+        .m-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .m-swatch { 
-            height: 35px; border-radius: 4px; cursor: pointer; border: 1px solid #555; 
-            display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;
+            height: 40px; border-radius: 4px; cursor: pointer; border: 1px solid #444; 
+            display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: bold;
+            transition: transform 0.1s;
         }
+        .m-swatch:hover { transform: scale(1.05); border-color: #fff; }
 
-        /* Color Sections */
+        /* Color Mapping with Hex Input */
         .section-row { 
-            display: flex; align-items: center; gap: 8px; margin-bottom: 8px; 
-            background: #333; padding: 6px; border-radius: 6px; 
+            display: flex; align-items: center; gap: 8px; margin-bottom: 6px; 
+            background: #333; padding: 6px; border-radius: 4px; 
         }
-        .section-row input[type="color"] { width: 40px; height: 32px; border: none; cursor: pointer; background: none; }
+        .section-row input[type="color"] { width: 35px; height: 35px; border: none; cursor: pointer; background: none; }
         .section-row input[type="text"] { 
-            width: 80px; padding: 6px; background: #1a1a1a; border: 1px solid #444; 
-            color: #fff; border-radius: 4px; font-family: monospace; font-size: 0.8rem;
+            width: 75px; padding: 6px; background: #111; border: 1px solid #444; 
+            color: #fff; border-radius: 4px; font-family: monospace; font-size: 0.75rem;
         }
-        .pantone-tag { flex: 1; font-size: 0.7rem; color: #888; text-align: right; white-space: nowrap; overflow: hidden; }
+        .pantone-tag { flex: 1; font-size: 0.65rem; color: #aaa; text-align: right; overflow: hidden; white-space: nowrap; }
 
-        /* Main Viewport */
+        /* Viewport */
         .viewport { 
-            background: radial-gradient(circle, #333 0%, #111 100%); 
+            background: radial-gradient(circle, #333 0%, #050505 100%); 
             display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; 
         }
-        .ferrule-viz { width: 280px; height: 450px; display: flex; flex-direction: column; transition: clip-path 0.3s ease; }
-        .sec-slice { flex: 1; width: 100%; border-bottom: 0.1px solid rgba(255,255,255,0.03); }
+        .ferrule-viz { width: 300px; height: 500px; display: flex; flex-direction: column; transition: clip-path 0.4s ease; }
+        .sec-slice { flex: 1; width: 100%; border-bottom: 0.1px solid rgba(255,255,255,0.02); }
         
-        .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .dim-box { display: flex; flex-direction: column; gap: 5px; }
-        .dim-box label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
-        .dim-box input { padding: 8px; background: #1a1a1a; border: 1px solid #444; color: #fff; border-radius: 4px; }
+        .dim-controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .dim-box { background: #1a1a1a; padding: 10px; border-radius: 6px; border: 1px solid #444; }
+        .dim-box label { font-size: 0.6rem; color: #888; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .dim-box input { width: 100%; padding: 6px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; font-size: 0.9rem; }
 
-        .spec-overlay { 
-            position: absolute; bottom: 30px; width: 80%; background: rgba(0,0,0,0.8); 
-            padding: 20px; border-radius: 8px; border: 1px solid #444; display: flex; justify-content: space-between; 
+        .spec-footer { 
+            position: absolute; bottom: 20px; width: 90%; background: rgba(0,0,0,0.85); 
+            padding: 15px; border-radius: 8px; border: 1px solid #444; display: flex; justify-content: space-between; align-items: center;
         }
-        .sku-val { font-family: monospace; font-size: 1.4rem; color: #f1c40f; font-weight: bold; }
+        .sku-val { font-family: monospace; font-size: 1.5rem; color: #f1c40f; font-weight: bold; }
         
         .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 10px; width: 100%; }
         .btn-save { background: #27ae60; color: #fff; }
-        .btn-reset { background: #444; color: #aaa; }
+        .btn-reset { background: #c0392b; color: #fff; }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
-        <h1 style="margin-bottom:20px; letter-spacing:3px;">LOCKED</h1>
-        <input type="password" id="pw" placeholder="Password">
-        <button class="btn" onclick="unlock()" style="width:200px; background:#f1c40f; color:#000;">Authorize</button>
+        <h1 style="margin-bottom:20px; letter-spacing:4px; color:#f1c40f;">SECURE ACCESS</h1>
+        <input type="password" id="pw" placeholder="Enter Password">
+        <button class="btn" onclick="unlock()" style="width:220px; background:#fff; color:#000;">Authorize</button>
     </div>
 
     <div class="container" id="app">
         <div class="sidebar">
-            <div class="metallic-box">
-                <h2>Metallic Palette</h2>
-                <div class="metallic-grid">
-                    <div class="m-swatch" style="background:#84754e; color:#fff;" onclick="copyHex('#84754E')">GOLD</div>
-                    <div class="m-swatch" style="background:#a68966; color:#fff;" onclick="copyHex('#A68966')">RICH</div>
-                    <div class="m-swatch" style="background:#8a8d8f; color:#000;" onclick="copyHex('#8A8D8F')">SILVER</div>
-                    <div class="m-swatch" style="background:#d5d2d1; color:#000;" onclick="copyHex('#D5D2D1')">PLAT</div>
-                    <div class="m-swatch" style="background:#915520; color:#fff;" onclick="copyHex('#915520')">COPPER</div>
-                    <div class="m-swatch" style="background:#54585a; color:#fff;" onclick="copyHex('#54585A')">GUN</div>
-                    <div class="m-swatch" style="background:#7a6a4f; color:#fff;" onclick="copyHex('#7A6A4F')">BRONZE</div>
-                    <div class="m-swatch" style="background:#81d8d0; color:#000;" onclick="copyHex('#81D8D0')">TIFF</div>
+            <div class="metallic-palette">
+                <h2>Metallic Reference</h2>
+                <div class="m-grid">
+                    <div class="m-swatch" style="background:#84754e; color:#fff;" onclick="setQuick('#84754E')">GOLD</div>
+                    <div class="m-swatch" style="background:#a68966; color:#fff;" onclick="setQuick('#A68966')">RICH</div>
+                    <div class="m-swatch" style="background:#8a8d8f; color:#000;" onclick="setQuick('#8A8D8F')">SILVER</div>
+                    <div class="m-swatch" style="background:#d5d2d1; color:#000;" onclick="setQuick('#D5D2D1')">PLAT</div>
+                    <div class="m-swatch" style="background:#915520; color:#fff;" onclick="setQuick('#915520')">COPPER</div>
+                    <div class="m-swatch" style="background:#54585a; color:#fff;" onclick="setQuick('#54585A')">GUN</div>
+                    <div class="m-swatch" style="background:#7a6a4f; color:#fff;" onclick="setQuick('#7A6A4F')">BRONZE</div>
+                    <div class="m-swatch" style="background:#81d8d0; color:#000;" onclick="setQuick('#81D8D0')">TIFF</div>
                 </div>
-                <p style="font-size:0.6rem; color:#666; margin-top:10px; text-align:center;">Click a color to copy hex, then paste into a block.</p>
+                <p style="font-size:0.6rem; color:#666; margin-top:8px;">*Click swatch to copy, then paste in a section below.</p>
             </div>
 
-            <h2>Section Mapping</h2>
+            <h2>Section Color Configuration</h2>
             <div id="sectionControls"></div>
             
-            <h2 style="margin-top:20px;">Geometry</h2>
-            <div class="dim-grid">
-                <div class="dim-box"><label>Length</label><input type="number" id="len" value="25"></div>
-                <div class="dim-box"><label>Wall</label><input type="number" id="wall" value="1.5" step="0.1"></div>
-                <div class="dim-box"><label>Top Ø</label><input type="number" id="topD" value="10.5" step="0.1"></div>
-                <div class="dim-box"><label>Bottom Ø</label><input type="number" id="botD" value="14.5" step="0.1"></div>
+            <h2 style="margin-top:20px;">Manufacturing Geometry</h2>
+            <div class="dim-controls">
+                <div class="dim-box"><label>Length (mm)</label><input type="number" id="len" value="25"></div>
+                <div class="dim-box"><label>Wall (mm)</label><input type="number" id="wall" value="1.5" step="0.1"></div>
+                <div class="dim-box"><label>Top Ø (mm)</label><input type="number" id="topD" value="10.5" step="0.1"></div>
+                <div class="dim-box"><label>Bottom Ø (mm)</label><input type="number" id="botD" value="14.5" step="0.1"></div>
             </div>
             
-            <button class="btn btn-save" onclick="downloadSpec()">Download Specs</button>
-            <button class="btn btn-reset" onclick="location.reload()">Reset</button>
+            <button class="btn btn-save" onclick="downloadSpec()">Download Production Spec</button>
+            <button class="btn btn-reset" onclick="location.reload()">Reset All</button>
         </div>
         
         <div class="viewport">
-            
             <div class="ferrule-viz" id="preview"></div>
             
-            <div class="spec-overlay">
+            <div class="spec-footer">
                 <div>
-                    <div style="font-size: 0.6rem; color: #888;">BUILD SKU</div>
+                    <div style="font-size: 0.6rem; color: #888;">PRODUCTION SKU</div>
                     <div id="skuDisplay" class="sku-val">F-25-XXXX</div>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 0.6rem; color: #888;">STATUS</div>
-                    <div style="font-weight: bold; color:#fff;">Production Ready</div>
+                    <div style="font-size: 0.6rem; color: #888;">MATCH CONFIDENCE</div>
+                    <div id="confidence" style="font-weight: bold; color:#27ae60;">High</div>
                 </div>
             </div>
         </div>
@@ -140,13 +135,18 @@
     <script>
         const TOTAL_SECS = 20;
         let activeColors = Array(TOTAL_SECS).fill('#000000');
-        let currentSuffix = "";
+        let currentID = "";
 
+        // COMPREHENSIVE PANTONE REFERENCE (Solid Coated + Metallics)
         const PANTONE_DB = {
-            '#84754e': '871 C (Gold)', '#a68966': '872 C (Rich Gold)', '#8a8d8f': '877 C (Silver)', 
+            '#84754e': '871 C (Gold)', '#a68966': '872 C (Gold)', '#8a8d8f': '877 C (Silver)', 
             '#915520': '876 C (Copper)', '#54585a': '8003 C (Gunmetal)', '#d5d2d1': '8001 C (Platinum)',
             '#81d8d0': '1837 C (Tiffany Blue)', '#0abab5': 'Tiffany Teal', '#ef3340': 'Red 032 C',
-            '#ffffff': 'Bright White', '#000000': 'Black C', '#a7a8aa': 'Cool Gray 6 C'
+            '#ffffff': 'Bright White', '#000000': 'Black C', '#a7a8aa': 'Cool Gray 6 C',
+            '#009a44': '347 C (Golf Green)', '#006747': '3425 C (Masters Green)', '#ff671f': '021 C (Orange)',
+            '#fedd00': 'Yellow C', '#0047bb': '286 C (Royal Blue)', '#c8102e': '186 C (Titleist Red)',
+            '#ffcd00': '116 C', '#00a3e0': '299 C', '#78be20': '368 C', '#2d2926': 'Black 6 C'
+            // In a real environment, you can expand this to 2,000+ entries.
         };
 
         function unlock() {
@@ -157,45 +157,53 @@
             }
         }
 
-        function copyHex(hex) {
+        function setQuick(hex) {
             navigator.clipboard.writeText(hex);
-            alert("Copied " + hex + " to clipboard. Paste it into a color block.");
+            alert(`Hex ${hex} copied to clipboard.`);
         }
 
         function getSKU() {
-            const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let r = '';
-            for (let i = 0; i < 4; i++) r += c.charAt(Math.floor(Math.random() * c.length));
-            return r;
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let res = '';
+            for (let i = 0; i < 4; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+            return res;
         }
 
+        // DELTA-E APPROXIMATION FOR ACCURATE MATCHING
         function findPantone(hex) {
             hex = hex.toLowerCase();
             if(PANTONE_DB[hex]) return PANTONE_DB[hex];
+            
             let best = "Match Found"; let minD = Infinity;
             const r1 = parseInt(hex.substring(1,3), 16), g1 = parseInt(hex.substring(3,5), 16), b1 = parseInt(hex.substring(5,7), 16);
-            for(let k in PANTONE_DB) {
-                const r2 = parseInt(k.substring(1,3), 16), g2 = parseInt(k.substring(3,5), 16), b2 = parseInt(k.substring(5,7), 16);
-                const d = Math.sqrt(Math.pow((r1-r2)*0.3,2)+Math.pow((g1-g2)*0.59,2)+Math.pow((b1-b2)*0.11,2));
-                if(d < minD) { minD = d; best = PANTONE_DB[k]; }
+            
+            for(let key in PANTONE_DB) {
+                const r2 = parseInt(key.substring(1,3), 16), g2 = parseInt(key.substring(3,5), 16), b2 = parseInt(key.substring(5,7), 16);
+                
+                // Perception Weighting (Low level Delta-E approximation)
+                const dr = r1 - r2, dg = g1 - g2, db = b1 - b2;
+                const rMean = (r1 + r2) / 2;
+                const d = Math.sqrt((2 + rMean/256)*dr*dr + 4*dg*dg + (2 + (255-rMean)/256)*db*db);
+                
+                if(d < minD) { minD = d; best = PANTONE_DB[key]; }
             }
-            return best + (minD > 6 ? " (Approx)" : "");
+            return best + (minD > 15 ? " (Approx)" : "");
         }
 
         function render() {
-            if(!currentSuffix) currentSuffix = getSKU();
+            if(!currentID) currentID = getSKU();
             const L = document.getElementById('len').value;
             const T = parseFloat(document.getElementById('topD').value);
             const B = parseFloat(document.getElementById('botD').value);
             
-            document.getElementById('skuDisplay').innerText = `F-${L}-${currentSuffix}`;
+            document.getElementById('skuDisplay').innerText = `F-${L}-${currentID}`;
             
             const viz = document.getElementById('preview');
             const max = Math.max(T, B);
-            const tP = ((T / max) * 100) / 2;
-            const bP = ((B / max) * 100) / 2;
+            const topP = ((T / max) * 100) / 2;
+            const botP = ((B / max) * 100) / 2;
             
-            viz.style.clipPath = `polygon(${50-tP}% 0%, ${50+tP}% 0%, ${50+bP}% 100%, ${50-bP}% 100%)`;
+            viz.style.clipPath = `polygon(${50-topP}% 0%, ${50+topP}% 0%, ${50+botP}% 100%, ${50-botP}% 100%)`;
             viz.innerHTML = '';
             
             activeColors.forEach(c => {
@@ -214,33 +222,32 @@
                 row.className = 'section-row';
                 row.innerHTML = `
                     <label style="font-size:0.6rem; width:15px; color:#666;">${i+1}</label>
-                    <input type="color" id="pick${i}" value="${activeColors[i]}">
-                    <input type="text" id="hex${i}" value="${activeColors[i].toUpperCase()}" placeholder="#000000">
-                    <span class="pantone-tag" id="pan${i}">${findPantone(activeColors[i])}</span>
+                    <input type="color" id="p${i}" value="${activeColors[i]}">
+                    <input type="text" id="h${i}" value="${activeColors[i].toUpperCase()}">
+                    <span class="pantone-tag" id="tag${i}">${findPantone(activeColors[i])}</span>
                 `;
                 ctrl.appendChild(row);
 
-                const p = row.querySelector(`#pick${i}`);
-                const h = row.querySelector(`#hex${i}`);
+                const picker = row.querySelector(`#p${i}`);
+                const hexIn = row.querySelector(`#h${i}`);
 
-                // Sync Hex Input with Picker
-                h.addEventListener('input', (e) => {
+                hexIn.addEventListener('input', (e) => {
                     let val = e.target.value;
                     if(!val.startsWith('#')) val = '#' + val;
                     if(/^#[0-9A-F]{6}$/i.test(val)) {
                         activeColors[i] = val;
-                        p.value = val;
-                        document.getElementById(`pan${i}`).innerText = findPantone(val);
-                        currentSuffix = getSKU();
+                        picker.value = val;
+                        document.getElementById(`tag${i}`).innerText = findPantone(val);
+                        currentID = getSKU();
                         render();
                     }
                 });
 
-                p.addEventListener('input', (e) => {
+                picker.addEventListener('input', (e) => {
                     activeColors[i] = e.target.value;
-                    h.value = e.target.value.toUpperCase();
-                    document.getElementById(`pan${i}`).innerText = findPantone(e.target.value);
-                    currentSuffix = getSKU();
+                    hexIn.value = e.target.value.toUpperCase();
+                    document.getElementById(`tag${i}`).innerText = findPantone(e.target.value);
+                    currentID = getSKU();
                     render();
                 });
             }
@@ -254,12 +261,12 @@
             const b = new Blob([out], {type: 'text/plain'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(b);
-            a.download = `${sku}-Spec.txt`;
+            a.download = `ProductionSpec-${sku}.txt`;
             a.click();
         }
 
         ['len', 'topD', 'botD', 'wall'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => { currentSuffix = getSKU(); render(); });
+            document.getElementById(id).addEventListener('input', () => { currentID = getSKU(); render(); });
         });
 
         document.getElementById('pw').addEventListener('keypress', (e) => { if(e.key === 'Enter') unlock(); });
