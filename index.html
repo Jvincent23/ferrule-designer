@@ -167,6 +167,22 @@
                 <div class="dim-box"><label>Top Ø (mm)</label><input type="number" id="topD" value="10.5" step="0.1" min="5" max="20"></div>
                 <div class="dim-box"><label>Bottom Ø (mm)</label><input type="number" id="botD" value="14.5" step="0.1" min="5" max="25"></div>
             </div>
+            <h2>Colour Sections</h2>
+            <div style="background:#1a1a1a; padding:12px; border-radius:8px; border:1px solid #444; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button onclick="changeSections(-1)" style="width:36px;height:36px;background:#333;border:1px solid #555;border-radius:6px;color:#fff;font-size:1.2rem;cursor:pointer;flex-shrink:0;transition:0.2s;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'">−</button>
+                    <div style="flex:1; text-align:center;">
+                        <div style="font-size:1.8rem; font-weight:bold; color:#f1c40f; font-family:'Courier New',monospace;" id="secCountDisplay">20</div>
+                        <div style="font-size:0.6rem; color:#888; text-transform:uppercase; letter-spacing:1px;">Sections</div>
+                    </div>
+                    <button onclick="changeSections(1)" style="width:36px;height:36px;background:#333;border:1px solid #555;border-radius:6px;color:#fff;font-size:1.2rem;cursor:pointer;flex-shrink:0;transition:0.2s;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'">+</button>
+                </div>
+                <input type="range" id="secSlider" min="1" max="50" value="20" oninput="setSections(parseInt(this.value))"
+                    style="width:100%;margin-top:10px;accent-color:#f1c40f;cursor:pointer;">
+                <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:#666;margin-top:2px;">
+                    <span>1</span><span>25</span><span>50</span>
+                </div>
+            </div>
             
             <button class="btn btn-save" onclick="downloadPDF()">📥 Download Production PDF</button>
             <button class="btn btn-reset" onclick="resetDesigner()">🔄 Reset Designer</button>
@@ -182,7 +198,7 @@
                 </div>
                 <div style="text-align: right;">
                     <div style="font-size: 0.6rem; color: #888;">SECTIONS</div>
-                    <div style="font-weight: bold; color:#fff;">20 Layers</div>
+                    <div id="footerSections" style="font-weight: bold; color:#fff;">20 Layers</div>
                 </div>
             </div>
         </div>
@@ -191,7 +207,7 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        const TOTAL_SECS = 20;
+        let TOTAL_SECS = 20;
         let activeColors = Array(TOTAL_SECS).fill('#000000');
         let currentID = "";
         let selectedSection = null;
@@ -1164,6 +1180,28 @@
             showNotification('✓ All hex codes copied');
         }
 
+        function changeSections(delta) {
+            setSections(TOTAL_SECS + delta);
+        }
+
+        function setSections(n) {
+            n = Math.max(1, Math.min(50, n));
+            if (n === TOTAL_SECS) return;
+
+            // Preserve existing colours, trim or extend
+            const prev = activeColors.slice();
+            TOTAL_SECS = n;
+            activeColors = Array(n).fill('#000000').map((_, i) => prev[i] || prev[prev.length - 1] || '#000000');
+
+            selectedSection = null;
+            document.getElementById('secSlider').value = n;
+            document.getElementById('secCountDisplay').textContent = n;
+            document.getElementById('footerSections').textContent = n + ' Layer' + (n === 1 ? '' : 's');
+            currentID = getSKU();
+            initDesigner();
+            showNotification('✓ ' + n + ' sections');
+        }
+
         function initDesigner() {
             const ctrl = document.getElementById('sectionControls');
             ctrl.innerHTML = '';
@@ -1395,11 +1433,14 @@
 
         function resetDesigner() {
             if(confirm('Reset all colors and settings?')) {
+                TOTAL_SECS = 20;
                 activeColors = Array(TOTAL_SECS).fill('#000000');
                 selectedSection = null;
                 currentID = getSKU();
-                document.querySelectorAll('.section-row').forEach((row, i) => { updateSection(i, '#000000'); });
-                refreshPreview();
+                document.getElementById('secSlider').value = 20;
+                document.getElementById('secCountDisplay').textContent = 20;
+                document.getElementById('footerSections').textContent = '20 Layers';
+                initDesigner();
                 showNotification('✓ Designer reset');
             }
         }
