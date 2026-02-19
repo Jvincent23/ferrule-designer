@@ -237,8 +237,13 @@
                 const picker = row.querySelector(`#p${i}`);
                 const hexIn = row.querySelector(`#h${i}`);
 
+                // Add both 'input' and 'change' events for better cross-browser support
                 picker.addEventListener('input', (e) => updateSection(i, e.target.value));
+                picker.addEventListener('change', (e) => updateSection(i, e.target.value));
+                
                 hexIn.addEventListener('input', (e) => updateSection(i, e.target.value));
+                hexIn.addEventListener('change', (e) => updateSection(i, e.target.value));
+                hexIn.addEventListener('blur', (e) => updateSection(i, e.target.value));
                 
                 row.addEventListener('click', (e) => {
                     if(e.target.tagName !== 'INPUT') selectSection(i);
