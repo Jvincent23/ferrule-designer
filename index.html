@@ -76,7 +76,7 @@
         }
         .pantone-tag.exact { color: #2ecc71; }
 
-        .dim-controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .dim-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
         .dim-box { background: #1a1a1a; padding: 10px; border-radius: 6px; border: 1px solid #444; }
         .dim-box label { font-size: 0.6rem; color: #888; text-transform: uppercase; display: block; margin-bottom: 4px; }
         .dim-box input { width: 100%; padding: 6px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; font-size: 0.9rem; }
@@ -149,6 +149,7 @@
             
             <h2>Manufacturing Geometry</h2>
             <div class="dim-controls">
+                <div class="dim-box"><label>Sections</label><input type="number" id="sections" value="20" min="5" max="50"></div>
                 <div class="dim-box"><label>Length (mm)</label><input type="number" id="len" value="25" min="10" max="50"></div>
                 <div class="dim-box"><label>Internal Ø (mm)</label><input type="number" id="wall" value="8.5" step="0.1" min="5" max="20"></div>
                 <div class="dim-box"><label>Top Ø (mm)</label><input type="number" id="topD" value="10.5" step="0.1" min="5" max="20"></div>
@@ -168,18 +169,82 @@
                     <div id="skuDisplay" class="sku-val">F-25-XXXX</div>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 0.6rem; color: #888;">DATABASE</div>
-                    <div style="font-weight: bold; color:#fff;">Auto-Snap</div>
+                    <div style="font-size: 0.6rem; color: #888;">SECTIONS</div>
+                    <div id="sectionCount" style="font-weight: bold; color:#fff;">20 Layers</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const TOTAL_SECS = 20;
+        let TOTAL_SECS = 20;
         let activeColors = Array(TOTAL_SECS).fill('#000000');
         let currentID = "";
         let selectedSection = null;
+
+        function updateSectionCount(newCount) {
+            newCount = parseInt(newCount);
+            if(newCount < 5) newCount = 5;
+            if(newCount > 50) newCount = 50;
+            
+            // Store old colors
+            const oldColors = [...activeColors];
+            
+            // Update total sections
+            TOTAL_SECS = newCount;
+            
+            // Resize activeColors array
+            if(newCount > oldColors.length) {
+                // Adding sections - fill with black
+                activeColors = [...oldColors, ...Array(newCount - oldColors.length).fill('#000000')];
+            } else {
+                // Removing sections - truncate
+                activeColors = oldColors.slice(0, newCount);
+            }
+            
+            // Deselect if selected section no longer exists
+            if(selectedSection >= TOTAL_SECS) {
+                selectedSection = null;
+            }
+            
+            // Rebuild section controls
+            rebuildSectionControls();
+            
+            // Update preview
+            refreshPreview();
+            
+            // Update SKU
+            currentID = getSKU();
+            
+            showNotification(`✓ Updated to ${TOTAL_SECS} sections`);
+        }
+
+        function rebuildSectionControls() {
+            const ctrl = document.getElementById('sectionControls');
+            ctrl.innerHTML = '';
+            
+            for(let i = 0; i < TOTAL_SECS; i++) {
+                const row = document.createElement('div');
+                row.className = 'section-row';
+                row.innerHTML = `
+                    <label style="font-size:0.55rem; width:15px; color:#777; font-weight:bold;">${i+1}</label>
+                    <input type="color" id="p${i}" value="${activeColors[i]}">
+                    <input type="text" id="h${i}" value="${activeColors[i].toUpperCase()}" maxlength="7" placeholder="#000000">
+                    <span class="pantone-tag exact" id="tag${i}">${COLOR_DATABASE[activeColors[i]].pantone} - ${COLOR_DATABASE[activeColors[i]].name}</span>
+                `;
+                ctrl.appendChild(row);
+
+                const picker = row.querySelector(`#p${i}`);
+                const hexIn = row.querySelector(`#h${i}`);
+
+                picker.addEventListener('input', (e) => updateSection(i, e.target.value));
+                hexIn.addEventListener('input', (e) => updateSection(i, e.target.value));
+                
+                row.addEventListener('click', (e) => {
+                    if(e.target.tagName !== 'INPUT') selectSection(i);
+                });
+            }
+        }
 
         // Comprehensive color database from HTML Color Codes with Pantone assignments
         const COLOR_DATABASE = {
@@ -545,17 +610,18 @@
         function refreshPreview() {
             if(!currentID) currentID = getSKU();
             const L = document.getElementById('len').value;
-            const T = parseFloat(document.getElementById('topD').value);
-            const B = parseFloat(document.getElementById('botD').value);
             
             document.getElementById('skuDisplay').innerText = `F-${L}-${currentID}`;
+            document.getElementById('sectionCount').innerText = `${TOTAL_SECS} Layers`;
             
             const viz = document.getElementById('preview');
-            const max = Math.max(T, B);
-            const topP = ((T / max) * 100) / 2;
-            const botP = ((B / max) * 100) / 2;
             
-            viz.style.clipPath = `polygon(${50-topP}% 0%, ${50+topP}% 0%, ${50+botP}% 100%, ${50-botP}% 100%)`;
+            // Fixed taper for visual appeal (not to scale)
+            // Top is 25% narrower than bottom for consistent tapered look
+            const topPercent = 30;  // 30% of width at top
+            const bottomPercent = 50; // 50% of width at bottom
+            
+            viz.style.clipPath = `polygon(${50-topPercent}% 0%, ${50+topPercent}% 0%, ${50+bottomPercent}% 100%, ${50-bottomPercent}% 100%)`;
             viz.innerHTML = '';
             
             activeColors.forEach((c, idx) => {
@@ -659,29 +725,13 @@
                 metallicGrid.appendChild(swatch);
             });
 
-            // Create section controls with original style
-            const ctrl = document.getElementById('sectionControls');
-            for(let i = 0; i < TOTAL_SECS; i++) {
-                const row = document.createElement('div');
-                row.className = 'section-row';
-                row.innerHTML = `
-                    <label style="font-size:0.55rem; width:15px; color:#777; font-weight:bold;">${i+1}</label>
-                    <input type="color" id="p${i}" value="${activeColors[i]}">
-                    <input type="text" id="h${i}" value="${activeColors[i].toUpperCase()}" maxlength="7" placeholder="#000000">
-                    <span class="pantone-tag exact" id="tag${i}">${COLOR_DATABASE[activeColors[i]].pantone} - ${COLOR_DATABASE[activeColors[i]].name}</span>
-                `;
-                ctrl.appendChild(row);
-
-                const picker = row.querySelector(`#p${i}`);
-                const hexIn = row.querySelector(`#h${i}`);
-
-                picker.addEventListener('input', (e) => updateSection(i, e.target.value));
-                hexIn.addEventListener('input', (e) => updateSection(i, e.target.value));
-                
-                row.addEventListener('click', (e) => {
-                    if(e.target.tagName !== 'INPUT') selectSection(i);
-                });
-            }
+            // Create initial section controls
+            rebuildSectionControls();
+            
+            // Add event listener for section count change
+            document.getElementById('sections').addEventListener('change', (e) => {
+                updateSectionCount(e.target.value);
+            });
             
             refreshPreview();
         }
@@ -729,8 +779,6 @@
         window.downloadSpec = downloadSpec;
 
         function resetDesigner() {
-            console.log('Reset button clicked - starting reset');
-            
             // Reset state
             activeColors = Array(TOTAL_SECS).fill('#000000');
             selectedSection = null;
@@ -738,7 +786,6 @@
             
             // Get all section rows
             const rows = document.querySelectorAll('.section-row');
-            console.log('Found rows:', rows.length);
             
             // Update each row
             rows.forEach((row, i) => {
@@ -746,12 +793,8 @@
                 const hexInput = row.querySelector('input[type="text"]');
                 const pantoneTag = row.querySelector('.pantone-tag');
                 
-                if(picker) {
-                    picker.value = '#000000';
-                }
-                if(hexInput) {
-                    hexInput.value = '#000000';
-                }
+                if(picker) picker.value = '#000000';
+                if(hexInput) hexInput.value = '#000000';
                 if(pantoneTag) {
                     pantoneTag.innerText = `${COLOR_DATABASE['#000000'].pantone} - ${COLOR_DATABASE['#000000'].name}`;
                     pantoneTag.className = 'pantone-tag exact';
@@ -761,11 +804,8 @@
                 row.classList.remove('selected');
             });
             
-            console.log('About to refresh preview');
             refreshPreview();
-            console.log('Showing notification');
             showNotification('✓ Designer reset');
-            console.log('Reset complete');
         }
         
         // Make it globally accessible
