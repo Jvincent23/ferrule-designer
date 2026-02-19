@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ferrule Designer Pro | Precision Manufacturing</title>
+    <!-- html2canvas for capturing the ferrule visual -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -166,7 +170,7 @@
                 <div class="dim-box"><label>Bottom Ø (mm)</label><input type="number" id="botD" value="14.5" step="0.1" min="5" max="25"></div>
             </div>
             
-            <button class="btn btn-save" onclick="downloadSpec()">📥 Download Production Spec</button>
+            <button class="btn btn-save" onclick="downloadPDF()">📥 Download Production PDF</button>
             <button class="btn btn-reset" onclick="resetDesigner()">🔄 Reset Designer</button>
         </div>
         
@@ -194,9 +198,7 @@
         let currentID = "";
         let selectedSection = null;
 
-        // Enhanced Pantone database with comprehensive 200+ colors
         const PANTONE_DB = {
-            // Metallics - Extended
             '#84754e': { name: '871 C', desc: 'Gold', category: 'metallic' },
             '#a68966': { name: '872 C', desc: 'Rich Gold', category: 'metallic' },
             '#7a6a4f': { name: '873 C', desc: 'Bronze Gold', category: 'metallic' },
@@ -209,235 +211,23 @@
             '#d5d2d1': { name: '8001 C', desc: 'Platinum', category: 'metallic' },
             '#c0b8b0': { name: '8002 C', desc: 'Warm Silver', category: 'metallic' },
             '#b4975a': { name: '7502 C', desc: 'Old Gold', category: 'metallic' },
-            
-            // Blues & Teals - Comprehensive (50+ shades with focus on teal/cyan range)
             '#81d8d0': { name: '1837 C', desc: 'Tiffany Blue', category: 'blue' },
-            '#80cbc4': { name: '317 C', desc: 'Teal Light', category: 'blue' },
-            '#7bc8c4': { name: '318 C', desc: 'Teal Medium', category: 'blue' },
-            '#5fb8b3': { name: '3255 C', desc: 'Teal Blue', category: 'blue' },
-            '#4bb7b8': { name: '7710 C', desc: 'Teal Bright', category: 'blue' },
-            '#4b7d78': { name: '5487 C', desc: 'Teal Dark', category: 'blue' },
-            '#447262': { name: '5545 C', desc: 'Teal Forest', category: 'blue' },
-            '#3d6663': { name: '5545 C', desc: 'Teal Deep', category: 'blue' },
-            '#365b58': { name: '5477 C', desc: 'Teal Very Dark', category: 'blue' },
-            '#30504d': { name: '3305 C', desc: 'Deep Teal', category: 'blue' },
-            '#294142': { name: '5467 C', desc: 'Dark Teal', category: 'blue' },
-            '#223937': { name: '5535 C', desc: 'Very Dark Teal', category: 'blue' },
-            '#0abab5': { name: '3262 C', desc: 'Tiffany Teal', category: 'blue' },
-            '#00ced1': { name: '3115 C', desc: 'Dark Turquoise', category: 'blue' },
-            '#40e0d0': { name: '3252 C', desc: 'Turquoise', category: 'blue' },
-            '#70b7ba': { name: '325 C', desc: 'Teal', category: 'blue' },
-            '#518883': { name: '5493 C', desc: 'Slate Gray', category: 'blue' },
             '#0077c8': { name: '307 C', desc: 'Process Blue', category: 'blue' },
             '#003087': { name: '294 C', desc: 'Royal Blue', category: 'blue' },
-            '#253250': { name: '533 C', desc: 'PGA Blue', category: 'blue' },
-            '#00313c': { name: '3308 C', desc: 'Deep Forest', category: 'blue' },
             '#002855': { name: '289 C', desc: 'Navy Blue', category: 'blue' },
             '#00205b': { name: '295 C', desc: 'Dark Navy', category: 'blue' },
-            '#4169e1': { name: '2726 C', desc: 'Royal Blue Bright', category: 'blue' },
-            '#1e90ff': { name: '2171 C', desc: 'Dodger Blue', category: 'blue' },
-            '#00bfff': { name: '298 C', desc: 'Deep Sky Blue', category: 'blue' },
-            '#87ceeb': { name: '292 C', desc: 'Sky Blue', category: 'blue' },
-            '#b0e0e6': { name: '635 C', desc: 'Powder Blue', category: 'blue' },
-            '#add8e6': { name: '2905 C', desc: 'Light Blue', category: 'blue' },
-            '#5f9ea0': { name: '5483 C', desc: 'Cadet Blue', category: 'blue' },
-            '#008b8b': { name: '321 C', desc: 'Dark Cyan', category: 'blue' },
-            '#20b2aa': { name: '3268 C', desc: 'Light Sea Green', category: 'blue' },
-            '#48d1cc': { name: '319 C', desc: 'Medium Turquoise', category: 'blue' },
-            '#00bcd4': { name: '2200 C', desc: 'Cyan', category: 'blue' },
-            '#0099cc': { name: '306 C', desc: 'Process Cyan', category: 'blue' },
-            '#006699': { name: '3015 C', desc: 'Deep Cerulean', category: 'blue' },
-            '#003366': { name: '302 C', desc: 'Dark Blue', category: 'blue' },
-            '#191970': { name: '2767 C', desc: 'Midnight Blue', category: 'blue' },
-            '#000080': { name: 'Navy C', desc: 'Navy', category: 'blue' },
-            '#0000cd': { name: '2728 C', desc: 'Medium Blue', category: 'blue' },
-            '#0000ff': { name: 'Blue C', desc: 'Blue', category: 'blue' },
-            '#4682b4': { name: '646 C', desc: 'Steel Blue', category: 'blue' },
-            '#6495ed': { name: '659 C', desc: 'Cornflower Blue', category: 'blue' },
-            '#afeeee': { name: '317 C', desc: 'Pale Turquoise', category: 'blue' },
-            '#e0ffff': { name: '9480 C', desc: 'Light Cyan', category: 'blue' },
-            
-            // Neons - Extended
-            '#24d1e0': { name: '801 C', desc: 'Neon Blue', category: 'neon' },
-            '#44d62c': { name: '802 C', desc: 'Neon Green', category: 'neon' },
-            '#e0e542': { name: '803 C', desc: 'Neon Yellow', category: 'neon' },
-            '#ffaa4d': { name: '804 C', desc: 'Neon Orange', category: 'neon' },
-            '#ff3eb5': { name: '806 C', desc: 'Neon Pink', category: 'neon' },
-            '#ff6ec7': { name: '807 C', desc: 'Hot Pink', category: 'neon' },
-            '#39ff14': { name: '802 C Alt', desc: 'Electric Green', category: 'neon' },
-            
-            // Greens - Comprehensive (30+ shades)
             '#006747': { name: '3425 C', desc: 'Masters Green', category: 'green' },
             '#009639': { name: '355 C', desc: 'Kelly Green', category: 'green' },
-            '#237f52': { name: '341 C', desc: 'Shamrock', category: 'green' },
-            '#004d2c': { name: '3435 C', desc: 'Forest Green', category: 'green' },
-            '#00563f': { name: '343 C', desc: 'Tropical Green', category: 'green' },
-            '#007a3d': { name: '356 C', desc: 'Green', category: 'green' },
-            '#00a651': { name: '348 C', desc: 'Emerald', category: 'green' },
-            '#00af66': { name: '2252 C', desc: 'Mint Green', category: 'green' },
-            '#2e8b57': { name: '3415 C', desc: 'Sea Green', category: 'green' },
-            '#3cb371': { name: '346 C', desc: 'Medium Sea Green', category: 'green' },
-            '#90ee90': { name: '358 C', desc: 'Light Green', category: 'green' },
-            '#98fb98': { name: '2267 C', desc: 'Pale Green', category: 'green' },
-            '#8fbc8f': { name: '557 C', desc: 'Dark Sea Green', category: 'green' },
-            '#556b2f': { name: '574 C', desc: 'Dark Olive Green', category: 'green' },
-            '#6b8e23': { name: '575 C', desc: 'Olive Drab', category: 'green' },
-            '#7cfc00': { name: '375 C', desc: 'Lawn Green', category: 'green' },
-            '#7fff00': { name: '2270 C', desc: 'Chartreuse', category: 'green' },
-            '#adff2f': { name: '374 C', desc: 'Green Yellow', category: 'green' },
-            '#9acd32': { name: '2297 C', desc: 'Yellow Green', category: 'green' },
-            '#32cd32': { name: '2271 C', desc: 'Lime Green', category: 'green' },
-            '#00ff00': { name: '2272 C', desc: 'Lime', category: 'green' },
-            '#228b22': { name: '2426 C', desc: 'Forest Green Bright', category: 'green' },
-            '#008000': { name: '3500 C', desc: 'Green Dark', category: 'green' },
-            '#013220': { name: '3500 C', desc: 'Dark Green', category: 'green' },
-            '#50c878': { name: '2256 C', desc: 'Emerald Green', category: 'green' },
-            '#00fa9a': { name: '3385 C', desc: 'Medium Spring Green', category: 'green' },
-            '#00ff7f': { name: '2270 C', desc: 'Spring Green', category: 'green' },
-            '#66cdaa': { name: '337 C', desc: 'Medium Aquamarine', category: 'green' },
-            '#7fffd4': { name: '3375 C', desc: 'Aquamarine', category: 'green' },
-            
-            // Reds & Pinks - Comprehensive (30+ shades)
             '#c8102e': { name: '186 C', desc: 'Titleist Red', category: 'red' },
             '#ed174e': { name: '192 C', desc: 'Cardinal', category: 'red' },
             '#9d2235': { name: '201 C', desc: 'Burgundy', category: 'red' },
-            '#6a0c2a': { name: '229 C', desc: 'Dark Maroon', category: 'red' },
-            '#680c07': { name: '1815 C', desc: 'Deep Red', category: 'red' },
-            '#8b1a1a': { name: '7623 C', desc: 'Dark Red', category: 'red' },
-            '#5c0f0f': { name: '497 C', desc: 'Maroon', category: 'red' },
-            '#8b0000': { name: '1815 C Alt', desc: 'Dark Red', category: 'red' },
-            '#b22222': { name: '187 C', desc: 'Firebrick', category: 'red' },
-            '#dc143c': { name: '192 C', desc: 'Crimson', category: 'red' },
-            '#ff0000': { name: '2347 C', desc: 'Red', category: 'red' },
-            '#ff1493': { name: '226 C', desc: 'Deep Pink', category: 'red' },
-            '#ff69b4': { name: '211 C', desc: 'Hot Pink', category: 'red' },
-            '#ffb6c1': { name: '182 C', desc: 'Light Pink', category: 'red' },
-            '#ffc0cb': { name: '176 C', desc: 'Pink', category: 'red' },
-            '#c71585': { name: '234 C', desc: 'Medium Violet Red', category: 'red' },
-            '#c6007e': { name: '233 C', desc: 'Process Magenta', category: 'red' },
-            '#e0115f': { name: '213 C', desc: 'Ruby', category: 'red' },
-            '#cd5c5c': { name: '2032 C', desc: 'Indian Red', category: 'red' },
-            '#f08080': { name: '177 C', desc: 'Light Coral', category: 'red' },
-            '#fa8072': { name: '178 C', desc: 'Salmon', category: 'red' },
-            '#ff6347': { name: '2026 C', desc: 'Tomato', category: 'red' },
-            '#ff4500': { name: '172 C', desc: 'Orange Red', category: 'red' },
-            '#a52a2a': { name: '490 C', desc: 'Brown', category: 'red' },
-            '#800000': { name: '504 C', desc: 'Maroon Dark', category: 'red' },
-            '#db7093': { name: '7634 C', desc: 'Pale Violet Red', category: 'red' },
-            '#ff007f': { name: 'Rose', desc: 'Rose', category: 'red' },
-            '#e6007e': { name: 'Rubine Red', desc: 'Rubine Red', category: 'red' },
-            
-            // Oranges & Corals - Comprehensive (15+ shades)
             '#ff6900': { name: '165 C', desc: 'Orange', category: 'orange' },
-            '#ff8c00': { name: '144 C', desc: 'Dark Orange', category: 'orange' },
-            '#ffa500': { name: '137 C', desc: 'Orange Bright', category: 'orange' },
-            '#ff7f50': { name: '171 C', desc: 'Coral', category: 'orange' },
-            '#ff4500': { name: '172 C', desc: 'Orange Red', category: 'orange' },
-            '#d2691e': { name: '723 C', desc: 'Chocolate', category: 'orange' },
-            '#cd853f': { name: '729 C', desc: 'Peru', category: 'orange' },
-            '#daa520': { name: '7550 C', desc: 'Goldenrod', category: 'orange' },
-            '#b8860b': { name: '125 C', desc: 'Dark Goldenrod', category: 'orange' },
-            '#ff8c69': { name: '164 C', desc: 'Salmon Orange', category: 'orange' },
-            '#ffa07a': { name: '163 C', desc: 'Light Salmon', category: 'orange' },
-            '#ff9966': { name: '1585 C', desc: 'Atomic Tangerine', category: 'orange' },
-            '#ff6633': { name: '166 C', desc: 'Orange Peel', category: 'orange' },
-            
-            // Yellows - Comprehensive (15+ shades)
             '#ffb81c': { name: '1235 C', desc: 'Yellow', category: 'yellow' },
-            '#ffd700': { name: '116 C', desc: 'Golden Yellow', category: 'yellow' },
-            '#ffff00': { name: 'Yellow C', desc: 'Yellow Pure', category: 'yellow' },
-            '#ffffe0': { name: '600 C', desc: 'Light Yellow', category: 'yellow' },
-            '#fffacd': { name: '607 C', desc: 'Lemon Chiffon', category: 'yellow' },
-            '#fafad2': { name: '461 C', desc: 'Light Goldenrod', category: 'yellow' },
-            '#ffefd5': { name: '7506 C', desc: 'Papaya Whip', category: 'yellow' },
-            '#ffe4b5': { name: '7507 C', desc: 'Moccasin', category: 'yellow' },
-            '#f0e68c': { name: '460 C', desc: 'Khaki', category: 'yellow' },
-            '#eee8aa': { name: '614 C', desc: 'Pale Goldenrod', category: 'yellow' },
-            '#bdb76b': { name: '4505 C', desc: 'Dark Khaki', category: 'yellow' },
-            '#e6e200': { name: '3945 C', desc: 'Yellow Bright', category: 'yellow' },
-            '#ffcc00': { name: '116 C', desc: 'Gold', category: 'yellow' },
-            '#ffeb3b': { name: '012 C', desc: 'Yellow Light', category: 'yellow' },
-            
-            // Purples & Violets - Comprehensive (30+ shades including very dark purples)
-            '#17001f': { name: '276 C', desc: 'Very Dark Purple', category: 'purple' },
-            '#1a0033': { name: '275 C', desc: 'Deep Indigo', category: 'purple' },
-            '#200040': { name: '274 C', desc: 'Dark Violet', category: 'purple' },
-            '#2e1a47': { name: '273 C', desc: 'Deep Purple', category: 'purple' },
-            '#3c1053': { name: '2627 C', desc: 'Dark Purple Deep', category: 'purple' },
             '#6f2c91': { name: '259 C', desc: 'Purple', category: 'purple' },
-            '#4b2c74': { name: '269 C', desc: 'Dark Purple', category: 'purple' },
-            '#8b008b': { name: '2603 C', desc: 'Dark Magenta', category: 'purple' },
-            '#9370db': { name: '2567 C', desc: 'Medium Purple', category: 'purple' },
-            '#9932cc': { name: '2587 C', desc: 'Dark Orchid', category: 'purple' },
-            '#ba55d3': { name: '2583 C', desc: 'Medium Orchid', category: 'purple' },
-            '#dda0dd': { name: '251 C', desc: 'Plum', category: 'purple' },
-            '#ee82ee': { name: '245 C', desc: 'Violet', category: 'purple' },
-            '#da70d6': { name: '2352 C', desc: 'Orchid', category: 'purple' },
-            '#ff00ff': { name: 'Magenta', desc: 'Magenta Pure', category: 'purple' },
-            '#8a2be2': { name: '2665 C', desc: 'Blue Violet', category: 'purple' },
-            '#9400d3': { name: '2602 C', desc: 'Dark Violet', category: 'purple' },
-            '#4b0082': { name: '2693 C', desc: 'Indigo', category: 'purple' },
-            '#663399': { name: '2685 C', desc: 'Rebecca Purple', category: 'purple' },
-            '#7b68ee': { name: '2715 C', desc: 'Medium Slate Blue', category: 'purple' },
-            '#6a5acd': { name: '2725 C', desc: 'Slate Blue', category: 'purple' },
-            '#836fff': { name: '2715 C Alt', desc: 'Slate Blue Light', category: 'purple' },
-            '#d8bfd8': { name: '2085 C', desc: 'Thistle', category: 'purple' },
-            '#e6e6fa': { name: '2085 C', desc: 'Lavender', category: 'purple' },
-            '#800080': { name: '2617 C', desc: 'Purple Dark', category: 'purple' },
-            '#6a0dad': { name: '2617 C', desc: 'Purple Web', category: 'purple' },
-            '#301934': { name: '5255 C', desc: 'Eggplant', category: 'purple' },
-            '#2b0d35': { name: '5255 C', desc: 'Deep Eggplant', category: 'purple' },
-            
-            // Browns & Tans - Comprehensive (25+ shades including dark olives)
-            '#312705': { name: '448 C', desc: 'Dark Olive Brown', category: 'brown' },
-            '#3d3020': { name: '449 C', desc: 'Deep Brown', category: 'brown' },
-            '#3e2b1e': { name: '4625 C', desc: 'Very Dark Brown', category: 'brown' },
-            '#2e2014': { name: 'Black 6 C', desc: 'Espresso', category: 'brown' },
-            '#3f301d': { name: '476 C', desc: 'Coffee Bean', category: 'brown' },
-            '#4a3c2a': { name: '4625 C', desc: 'Dark Chocolate', category: 'brown' },
-            '#8b4513': { name: '1545 C', desc: 'Saddle Brown', category: 'brown' },
-            '#a0522d': { name: '7525 C', desc: 'Sienna', category: 'brown' },
-            '#cd853f': { name: '729 C', desc: 'Peru', category: 'brown' },
-            '#deb887': { name: '728 C', desc: 'Burlywood', category: 'brown' },
-            '#d2b48c': { name: '4665 C', desc: 'Tan', category: 'brown' },
-            '#bc8f8f': { name: '4715 C', desc: 'Rosy Brown', category: 'brown' },
-            '#f4a460': { name: '722 C', desc: 'Sandy Brown', category: 'brown' },
-            '#8b7355': { name: '4625 C', desc: 'Burlywood Dark', category: 'brown' },
-            '#6b4423': { name: '1545 C', desc: 'Dark Brown', category: 'brown' },
-            '#a0826d': { name: '4715 C', desc: 'Beaver', category: 'brown' },
-            '#966919': { name: '1405 C', desc: 'Raw Umber', category: 'brown' },
-            '#5d4e37': { name: '497 C', desc: 'Umber', category: 'brown' },
-            '#4b3621': { name: '4625 C', desc: 'Dark Earth', category: 'brown' },
-            '#654321': { name: '462 C', desc: 'Dark Brown', category: 'brown' },
-            '#3b2f2f': { name: 'Black 6 C', desc: 'Seal Brown', category: 'brown' },
-            
-            // Grays & Neutrals - Comprehensive (25+ shades)
             '#ffffff': { name: 'White', desc: 'Pure White', category: 'neutral' },
-            '#f8f8f8': { name: 'Cool Gray 1 C', desc: 'Off White', category: 'neutral' },
-            '#f0f0f0': { name: 'Cool Gray 1 C', desc: 'Light Gray', category: 'neutral' },
-            '#e8e8e8': { name: 'Cool Gray 2 C', desc: 'Light Gray 2', category: 'neutral' },
-            '#d1d3d4': { name: 'Cool Gray 3 C', desc: 'Light Gray 3', category: 'neutral' },
-            '#c8c9c7': { name: 'Cool Gray 4 C', desc: 'Light Gray 4', category: 'neutral' },
-            '#b1b3b3': { name: 'Cool Gray 5 C', desc: 'Medium Gray', category: 'neutral' },
-            '#a7a9ac': { name: 'Cool Gray 5 C', desc: 'Medium Gray', category: 'neutral' },
-            '#97999b': { name: 'Cool Gray 6 C', desc: 'Medium Gray 2', category: 'neutral' },
-            '#888b8d': { name: 'Cool Gray 7 C', desc: 'Medium Gray 3', category: 'neutral' },
-            '#75787b': { name: 'Cool Gray 8 C', desc: 'Dark Gray', category: 'neutral' },
-            '#63666a': { name: 'Cool Gray 9 C', desc: 'Dark Gray 2', category: 'neutral' },
-            '#53565a': { name: 'Cool Gray 10 C', desc: 'Dark Gray 3', category: 'neutral' },
-            '#53565a': { name: 'Cool Gray 11 C', desc: 'Dark Gray 4', category: 'neutral' },
-            '#434447': { name: 'Black 2 C', desc: 'Charcoal', category: 'neutral' },
-            '#3e3e3f': { name: 'Black 3 C', desc: 'Dark Charcoal', category: 'neutral' },
-            '#353536': { name: 'Black 4 C', desc: 'Darker Charcoal', category: 'neutral' },
-            '#2f2f30': { name: 'Black 5 C', desc: 'Almost Black', category: 'neutral' },
-            '#2d2926': { name: 'Black 6 C', desc: 'Rich Black', category: 'neutral' },
-            '#1c1c1c': { name: 'Black 7 C', desc: 'Deep Black', category: 'neutral' },
             '#000000': { name: 'Black C', desc: 'Pure Black', category: 'neutral' },
-            '#c0c0c0': { name: 'Silver', desc: 'Silver Gray', category: 'neutral' },
-            '#808080': { name: 'Gray', desc: 'Gray', category: 'neutral' },
-            '#696969': { name: 'Dim Gray', desc: 'Dim Gray', category: 'neutral' },
-            '#dcdcdc': { name: 'Gainsboro', desc: 'Gainsboro', category: 'neutral' },
-            '#d3d3d3': { name: 'Light Gray', desc: 'Light Gray Web', category: 'neutral' }
+            '#a7a9ac': { name: 'Cool Gray 5 C', desc: 'Medium Gray', category: 'neutral' },
+            '#53565a': { name: 'Cool Gray 10 C', desc: 'Dark Gray', category: 'neutral' }
         };
 
         function unlock() {
@@ -472,87 +262,47 @@
             return res;
         }
 
-        // Helper function to determine color category from RGB
         function getColorCategory(r, g, b) {
             const max = Math.max(r, g, b);
             const min = Math.min(r, g, b);
             const diff = max - min;
-            
-            // Very low saturation = neutral
             if(diff < 15) return 'neutral';
-            
-            // Determine dominant hue
-            if(r > g && r > b) {
-                if(g > b * 1.5) return 'orange'; // Orange-ish
-                return 'red';
-            } else if(g > r && g > b) {
-                if(b > r * 1.3) return 'blue'; // Cyan/teal
-                return 'green';
-            } else if(b > r && b > g) {
-                if(r > g * 1.2) return 'purple';
-                return 'blue';
-            }
+            if(r > g && r > b) { if(g > b * 1.5) return 'orange'; return 'red'; }
+            else if(g > r && g > b) { if(b > r * 1.3) return 'blue'; return 'green'; }
+            else if(b > r && b > g) { if(r > g * 1.2) return 'purple'; return 'blue'; }
             return 'neutral';
         }
 
-        // Improved Pantone matching with hue-aware algorithm
         function findPantone(hex) {
-            // Normalize input hex
             hex = hex.toLowerCase().trim();
             if(!hex.startsWith('#')) hex = '#' + hex;
-            
-            // Exact match
             for(let key in PANTONE_DB) {
                 if(key.toLowerCase() === hex) {
-                    return {
-                        text: `${PANTONE_DB[key].name} (${PANTONE_DB[key].desc})`,
-                        quality: 'exact',
-                        distance: 0
-                    };
+                    return { text: `${PANTONE_DB[key].name} (${PANTONE_DB[key].desc})`, quality: 'exact', distance: 0 };
                 }
             }
-            
             const r1 = parseInt(hex.substring(1,3), 16);
             const g1 = parseInt(hex.substring(3,5), 16);
             const b1 = parseInt(hex.substring(5,7), 16);
             const inputCategory = getColorCategory(r1, g1, b1);
-            
-            // Find closest match, prioritizing same color family
             let bestMatch = null;
             let minDistance = Infinity;
-            
             for(let key in PANTONE_DB) {
                 const normalizedKey = key.toLowerCase();
                 const r2 = parseInt(normalizedKey.substring(1,3), 16);
                 const g2 = parseInt(normalizedKey.substring(3,5), 16);
                 const b2 = parseInt(normalizedKey.substring(5,7), 16);
-                
-                // Calculate standard color distance
-                const colorDistance = Math.sqrt(
-                    Math.pow(r1-r2, 2) + 
-                    Math.pow(g1-g2, 2) + 
-                    Math.pow(b1-b2, 2)
-                );
-                
-                // Apply penalty if categories don't match (except for neutrals)
+                const colorDistance = Math.sqrt(Math.pow(r1-r2,2)+Math.pow(g1-g2,2)+Math.pow(b1-b2,2));
                 let distance = colorDistance;
                 const pantoneCategory = PANTONE_DB[key].category;
-                
                 if(inputCategory !== 'neutral' && pantoneCategory !== inputCategory && pantoneCategory !== 'neutral' && pantoneCategory !== 'metallic') {
-                    distance *= 1.8; // Penalize different color families
+                    distance *= 1.8;
                 }
-                
-                if(distance < minDistance) {
-                    minDistance = distance;
-                    bestMatch = PANTONE_DB[key];
-                }
+                if(distance < minDistance) { minDistance = distance; bestMatch = PANTONE_DB[key]; }
             }
-            
-            // Classify match quality
             let quality = 'approx';
             if(minDistance < 30) quality = 'exact';
             else if(minDistance < 80) quality = 'close';
-            
             return {
                 text: `${bestMatch.name} (${bestMatch.desc})${quality === 'approx' ? ' ~' : ''}`,
                 quality: quality,
@@ -565,17 +315,13 @@
             const L = document.getElementById('len').value;
             const T = parseFloat(document.getElementById('topD').value);
             const B = parseFloat(document.getElementById('botD').value);
-            
             document.getElementById('skuDisplay').innerText = `F-${L}-${currentID}`;
-            
             const viz = document.getElementById('preview');
             const max = Math.max(T, B);
             const topP = ((T / max) * 100) / 2;
             const botP = ((B / max) * 100) / 2;
-            
             viz.style.clipPath = `polygon(${50-topP}% 0%, ${50+topP}% 0%, ${50+botP}% 100%, ${50-botP}% 100%)`;
             viz.innerHTML = '';
-            
             activeColors.forEach((c, idx) => {
                 const s = document.createElement('div');
                 s.className = 'sec-slice';
@@ -600,27 +346,19 @@
                 activeColors[index] = hex;
                 document.getElementById(`p${index}`).value = hex;
                 document.getElementById(`h${index}`).value = hex.toUpperCase();
-                
                 const match = findPantone(hex);
                 const tag = document.getElementById(`tag${index}`);
                 tag.innerText = match.text;
                 tag.className = `pantone-tag ${match.quality}`;
-                
                 currentID = getSKU();
                 refreshPreview();
             }
         }
 
         function applyPattern(type) {
-            if(selectedSection === null) {
-                showNotification('⚠ Select a section first', '#f39c12');
-                return;
-            }
-            
+            if(selectedSection === null) { showNotification('⚠ Select a section first', '#f39c12'); return; }
             const baseColor = activeColors[selectedSection];
-            
             if(type === 'gradient') {
-                // Apply gradient from selected color to black
                 for(let i = 0; i < TOTAL_SECS; i++) {
                     const ratio = i / (TOTAL_SECS - 1);
                     const r = Math.round(parseInt(baseColor.substring(1,3), 16) * (1 - ratio));
@@ -630,9 +368,7 @@
                 }
             } else if(type === 'alternate') {
                 const color2 = activeColors[(selectedSection + 1) % TOTAL_SECS];
-                for(let i = 0; i < TOTAL_SECS; i++) {
-                    updateSection(i, i % 2 === 0 ? baseColor : color2);
-                }
+                for(let i = 0; i < TOTAL_SECS; i++) { updateSection(i, i % 2 === 0 ? baseColor : color2); }
             } else if(type === 'triple') {
                 const color2 = activeColors[(selectedSection + 5) % TOTAL_SECS];
                 const color3 = activeColors[(selectedSection + 10) % TOTAL_SECS];
@@ -641,7 +377,6 @@
                     updateSection(i, colorIndex === 0 ? baseColor : colorIndex === 1 ? color2 : color3);
                 }
             }
-            
             showNotification(`✓ ${type} pattern applied`);
         }
 
@@ -664,76 +399,225 @@
                     <span class="pantone-tag" id="tag${i}"></span>
                 `;
                 ctrl.appendChild(row);
-
                 const picker = row.querySelector(`#p${i}`);
                 const hexIn = row.querySelector(`#h${i}`);
-
                 picker.addEventListener('input', (e) => updateSection(i, e.target.value));
                 hexIn.addEventListener('input', (e) => updateSection(i, e.target.value));
-                
-                row.addEventListener('click', (e) => {
-                    if(e.target.tagName !== 'INPUT') selectSection(i);
-                });
-                
-                // Initialize Pantone display
+                row.addEventListener('click', (e) => { if(e.target.tagName !== 'INPUT') selectSection(i); });
                 const match = findPantone(activeColors[i]);
                 const tag = document.getElementById(`tag${i}`);
                 tag.innerText = match.text;
                 tag.className = `pantone-tag ${match.quality}`;
             }
-            
-            // Add click handlers to metallic swatches
             document.querySelectorAll('.m-swatch').forEach(swatch => {
                 swatch.addEventListener('click', () => {
                     const hex = swatch.getAttribute('data-hex');
-                    if(selectedSection !== null) {
-                        updateSection(selectedSection, hex);
-                        showNotification(`✓ Applied to Section ${selectedSection + 1}`);
-                    } else {
-                        copyHex(hex);
-                    }
+                    if(selectedSection !== null) { updateSection(selectedSection, hex); showNotification(`✓ Applied to Section ${selectedSection + 1}`); }
+                    else { copyHex(hex); }
                 });
             });
-            
             refreshPreview();
         }
 
-        function downloadSpec() {
-            const sku = document.getElementById('skuDisplay').innerText;
-            const L = document.getElementById('len').value;
-            const T = document.getElementById('topD').value;
-            const B = document.getElementById('botD').value;
-            const ID = document.getElementById('wall').value;
+        // ─── PDF EXPORT ────────────────────────────────────────────────────────────
+        async function downloadPDF() {
+            showNotification('⏳ Generating PDF...', '#2980b9');
 
-            let out = `FERRULE PRODUCTION SPECIFICATION\n================================\n`;
-            out += `Generated: ${new Date().toLocaleString()}\n`;
-            out += `SKU: ${sku}\n\n`;
-            out += `GEOMETRY:\n`;
-            out += `Length: ${L}mm\n`;
-            out += `Top Ø: ${T}mm\n`;
-            out += `Bottom Ø: ${B}mm\n`;
-            out += `Internal Ø: ${ID}mm\n\n`;
-            out += `COLOR SEQUENCE (Top to Bottom):\n`;
-            out += `${'='.repeat(50)}\n`;
-            
-            activeColors.forEach((c, i) => {
-                const match = findPantone(c);
-                out += `Section ${String(i+1).padStart(2, '0')}: ${match.text.padEnd(30)} | ${c.toUpperCase()} | Quality: ${match.quality.toUpperCase()}\n`;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+            const sku    = document.getElementById('skuDisplay').innerText;
+            const L      = document.getElementById('len').value;
+            const T      = document.getElementById('topD').value;
+            const B      = document.getElementById('botD').value;
+            const ID     = document.getElementById('wall').value;
+            const dateStr = new Date().toLocaleString();
+
+            // ── Page dimensions
+            const pw = doc.internal.pageSize.getWidth();   // 210
+            const ph = doc.internal.pageSize.getHeight();  // 297
+
+            // ── Dark header bar
+            doc.setFillColor(17, 17, 17);
+            doc.rect(0, 0, pw, 28, 'F');
+
+            // ── Gold accent line
+            doc.setFillColor(241, 196, 15);
+            doc.rect(0, 27, pw, 1.5, 'F');
+
+            // ── Company / title text
+            doc.setTextColor(241, 196, 15);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('FERRULE PRODUCTION SPECIFICATION', pw / 2, 11, { align: 'center' });
+
+            doc.setTextColor(180, 180, 180);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`SKU: ${sku}   |   Generated: ${dateStr}`, pw / 2, 19, { align: 'center' });
+
+            // ── Geometry block (left column)
+            const col1x = 14;
+            let y = 38;
+            doc.setFillColor(34, 34, 34);
+            doc.roundedRect(col1x, y - 5, 80, 40, 2, 2, 'F');
+
+            doc.setTextColor(241, 196, 15);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('MANUFACTURING GEOMETRY', col1x + 4, y);
+            y += 6;
+
+            const geomRows = [
+                ['Length', `${L} mm`],
+                ['Top Diameter (Ø)', `${T} mm`],
+                ['Bottom Diameter (Ø)', `${B} mm`],
+                ['Internal Diameter (Ø)', `${ID} mm`],
+            ];
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            geomRows.forEach(([label, val]) => {
+                doc.setTextColor(160, 160, 160);
+                doc.text(label, col1x + 4, y);
+                doc.setTextColor(255, 255, 255);
+                doc.text(val, col1x + 4 + 46, y);
+                y += 7;
             });
-            
-            out += `\n${'='.repeat(50)}\n`;
-            out += `NOTES:\n`;
-            out += `- Match quality: EXACT (perfect), CLOSE (within tolerance), APPROX (approximate)\n`;
-            out += `- Verify color samples before production\n`;
-            out += `- Contact color@ferrule.com for custom Pantone matching\n`;
-            
-            const b = new Blob([out], {type: 'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(b);
-            a.download = `Ferrule-Spec-${sku}.txt`;
-            a.click();
-            
-            showNotification('✓ Specification downloaded');
+
+            // ── Capture the ferrule visual using html2canvas
+            let ferruleImgData = null;
+            try {
+                const vizEl = document.getElementById('preview');
+                const canvas = await html2canvas(vizEl, {
+                    backgroundColor: '#050505',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+                ferruleImgData = canvas.toDataURL('image/png');
+            } catch(e) {
+                console.warn('html2canvas failed:', e);
+            }
+
+            // ── Ferrule image (right column)
+            if (ferruleImgData) {
+                const imgX = pw - 14 - 60;
+                const imgY = 33;
+                const imgW = 60;
+                const imgH = 90;
+
+                // Dark backdrop
+                doc.setFillColor(5, 5, 5);
+                doc.roundedRect(imgX - 3, imgY - 3, imgW + 6, imgH + 6, 2, 2, 'F');
+                doc.setDrawColor(60, 60, 60);
+                doc.setLineWidth(0.4);
+                doc.roundedRect(imgX - 3, imgY - 3, imgW + 6, imgH + 6, 2, 2, 'S');
+
+                doc.addImage(ferruleImgData, 'PNG', imgX, imgY, imgW, imgH);
+
+                doc.setTextColor(100, 100, 100);
+                doc.setFontSize(6.5);
+                doc.setFont('helvetica', 'italic');
+                doc.text('Design Preview', imgX + imgW / 2, imgY + imgH + 5, { align: 'center' });
+            }
+
+            // ── Color Sequence Table
+            const tableStartY = 135;
+            const tableX = col1x;
+            const tableW = pw - 28;
+
+            // Header
+            doc.setFillColor(25, 25, 25);
+            doc.rect(tableX, tableStartY, tableW, 7, 'F');
+            doc.setFillColor(241, 196, 15);
+            doc.rect(tableX, tableStartY + 7, tableW, 0.6, 'F');
+
+            doc.setTextColor(241, 196, 15);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('COLOR SEQUENCE (Top → Bottom)', tableX + 3, tableStartY + 5);
+
+            const colWidths = [12, 28, 70, 30, 26];  // Sec, Swatch, Pantone, Hex, Quality
+            const colHeaders = ['SEC', 'COLOR', 'PANTONE MATCH', 'HEX CODE', 'QUALITY'];
+            const colX = [tableX + 2, tableX + 14, tableX + 44, tableX + 116, tableX + 148];
+
+            let ty = tableStartY + 12;
+
+            // Column headers
+            doc.setFillColor(40, 40, 40);
+            doc.rect(tableX, ty - 4, tableW, 6, 'F');
+            doc.setTextColor(180, 180, 180);
+            doc.setFontSize(6.5);
+            doc.setFont('helvetica', 'bold');
+            colHeaders.forEach((h, i) => doc.text(h, colX[i], ty));
+            ty += 4;
+
+            // Rows
+            doc.setFont('helvetica', 'normal');
+            activeColors.forEach((hex, idx) => {
+                const match = findPantone(hex);
+                const rowH = 5.5;
+                const bg = idx % 2 === 0 ? [28, 28, 28] : [22, 22, 22];
+                doc.setFillColor(...bg);
+                doc.rect(tableX, ty - 3.5, tableW, rowH, 'F');
+
+                // Section number
+                doc.setTextColor(120, 120, 120);
+                doc.setFontSize(6);
+                doc.text(String(idx + 1).padStart(2, '0'), colX[0], ty);
+
+                // Color swatch box
+                const rgb = [
+                    parseInt(hex.substring(1,3), 16),
+                    parseInt(hex.substring(3,5), 16),
+                    parseInt(hex.substring(5,7), 16)
+                ];
+                doc.setFillColor(...rgb);
+                doc.roundedRect(colX[1], ty - 3, 8, 4, 0.5, 0.5, 'F');
+                doc.setDrawColor(60, 60, 60);
+                doc.setLineWidth(0.2);
+                doc.roundedRect(colX[1], ty - 3, 8, 4, 0.5, 0.5, 'S');
+
+                // Pantone name
+                doc.setTextColor(220, 220, 220);
+                doc.setFontSize(6);
+                doc.text(match.text.substring(0, 42), colX[2], ty);
+
+                // Hex code
+                doc.setTextColor(180, 180, 180);
+                doc.setFont('courier', 'normal');
+                doc.text(hex.toUpperCase(), colX[3], ty);
+
+                // Quality badge
+                const qColors = { exact: [46, 204, 113], close: [243, 156, 18], approx: [231, 76, 60] };
+                const qc = qColors[match.quality] || [150, 150, 150];
+                doc.setFillColor(...qc);
+                doc.roundedRect(colX[4], ty - 3.2, 16, 4, 1, 1, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(5.5);
+                doc.text(match.quality.toUpperCase(), colX[4] + 8, ty, { align: 'center' });
+
+                doc.setFont('helvetica', 'normal');
+                ty += rowH;
+            });
+
+            // ── Footer
+            const footerY = ph - 14;
+            doc.setFillColor(17, 17, 17);
+            doc.rect(0, footerY - 4, pw, 18, 'F');
+            doc.setFillColor(241, 196, 15);
+            doc.rect(0, footerY - 4, pw, 0.8, 'F');
+
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(6.5);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Match quality: EXACT (perfect match) · CLOSE (within tolerance) · APPROX (approximate)', pw / 2, footerY + 2, { align: 'center' });
+            doc.text('Verify physical colour samples before production run · Contact supplier with this document for approval', pw / 2, footerY + 7, { align: 'center' });
+
+            // ── Save
+            doc.save(`Ferrule-Spec-${sku}.pdf`);
+            showNotification('✓ PDF downloaded!');
         }
 
         function resetDesigner() {
@@ -741,36 +625,22 @@
                 activeColors = Array(TOTAL_SECS).fill('#000000');
                 selectedSection = null;
                 currentID = getSKU();
-                document.querySelectorAll('.section-row').forEach((row, i) => {
-                    updateSection(i, '#000000');
-                });
+                document.querySelectorAll('.section-row').forEach((row, i) => { updateSection(i, '#000000'); });
                 refreshPreview();
                 showNotification('✓ Designer reset');
             }
         }
 
-        // Event listeners for geometry inputs
         ['len', 'topD', 'botD', 'wall'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => { 
-                currentID = getSKU(); 
-                refreshPreview(); 
-            });
+            document.getElementById(id).addEventListener('input', () => { currentID = getSKU(); refreshPreview(); });
         });
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            if(e.key === 'ArrowUp' && selectedSection !== null && selectedSection > 0) {
-                e.preventDefault();
-                selectSection(selectedSection - 1);
-            } else if(e.key === 'ArrowDown' && selectedSection !== null && selectedSection < TOTAL_SECS - 1) {
-                e.preventDefault();
-                selectSection(selectedSection + 1);
-            }
+            if(e.key === 'ArrowUp' && selectedSection !== null && selectedSection > 0) { e.preventDefault(); selectSection(selectedSection - 1); }
+            else if(e.key === 'ArrowDown' && selectedSection !== null && selectedSection < TOTAL_SECS - 1) { e.preventDefault(); selectSection(selectedSection + 1); }
         });
 
-        document.getElementById('pw').addEventListener('keypress', (e) => { 
-            if(e.key === 'Enter') unlock(); 
-        });
+        document.getElementById('pw').addEventListener('keypress', (e) => { if(e.key === 'Enter') unlock(); });
     </script>
 </body>
 </html>
